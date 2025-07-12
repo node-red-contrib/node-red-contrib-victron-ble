@@ -1,5 +1,5 @@
 // Node-RED node editor logic for victron-ble
-import { EditorRED, EditorNodeDef } from "node-red";
+import { EditorRED } from "node-red";
 declare var RED: EditorRED;
 
 RED.nodes.registerType('victron-ble', {
@@ -7,8 +7,10 @@ RED.nodes.registerType('victron-ble', {
     color: '#a6bbcf',
     defaults: {
         name: { value: "" },
-        address: { value: "" },
-        key: { value: "" }
+        address: { value: "", required: true }
+    },
+    credentials: {
+        key: { type: "password" }
     },
     inputs: 0,
     outputs: 1,

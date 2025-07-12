@@ -1,7 +1,7 @@
 {
   "name": "victron-ble",
   "version": "1.0.0",
-  "description": "Node.js library to parse Instant Readout advertisement data from Victron devices",
+  "description": "node-red node to parse Instant Readout advertisement data from Victron BLE devices",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -18,7 +18,7 @@
   ],
   "node-red": {
     "nodes": {
-      "victron-ble": "dist/victron-ble.js"
+      "victron-ble": "dist/nodered/victron-ble.js"
     }
   },
   "author": "konne",
@@ -32,7 +32,7 @@
       "url": "https://github.com/konne"
     }
   ],
-  "license": "Unlicense",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/keshavdv/victron-ble.git"
@@ -47,8 +47,6 @@
     "@typescript-eslint/eslint-plugin": "^6.13.0",
     "@typescript-eslint/parser": "^6.13.0",
     "eslint": "^8.54.0",
-    "jest": "^29.7.0",
-    "ts-jest": "^29.1.1",
     "typescript": "^5.3.3"
   },
   "engines": {
