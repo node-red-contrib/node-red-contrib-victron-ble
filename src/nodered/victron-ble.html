@@ -1,0 +1,31 @@
+<script type="text/html" data-template-name="victron-ble">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-address"><i class="fa fa-bluetooth"></i> Device Address</label>
+        <input type="text" id="node-input-address" placeholder="Device Address">
+    </div>
+    <div class="form-row">
+        <label for="node-input-key"><i class="fa fa-key"></i> Decryption Key</label>
+        <input type="text" id="node-input-key" placeholder="Decryption Key">
+    </div>
+</script>
+
+<script type="text/html" data-help-name="victron-ble">
+    <p>Node-RED node for reading Victron BLE device data.</p>
+    <p>Use the <b>Discover Devices</b> button to scan for nearby Victron devices. Select a device and enter its decryption key to read data.</p>
+    <ul>
+        <li><b>Device Address</b>: The BLE address of the device (select from discovered devices or enter manually).</li>
+        <li><b>Decryption Key</b>: The key required to decrypt the device's data.</li>
+    </ul>
+    <p><b>Output:</b> Emits a message for each successfully decoded packet with the following properties:</p>
+    <ul>
+        <li><b>payload</b>: The parsed device data</li>
+        <li><b>address</b>: The device address</li>
+        <li><b>name</b>: The device name</li>
+        <li><b>rssi</b>: Signal strength</li>
+        <li><b>lastSeen</b>: Timestamp of the packet</li>
+    </ul>
+</script> 
