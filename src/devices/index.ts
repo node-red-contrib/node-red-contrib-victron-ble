@@ -75,17 +75,15 @@ export function detectDeviceType(data: Buffer): (new (advertisementKey: string) 
     // Model ID-based preferences
     const match = MODEL_PARSER_OVERRIDE[modelId];
     if (match) {
-      console.log(`Using override for model ID 0x${modelId.toString(16).toUpperCase()}`);
+      // console.log(`Using override for model ID 0x${modelId.toString(16).toUpperCase()}`);
       return match;
     }
 
     // Defaults based on mode
     switch (mode) {
       case 0x2:  // BatteryMonitor
-      
         return BatteryMonitor;
       case 0xD:  // DcEnergyMeter
-      
         return DcEnergyMeter;
       case 0x8:  // AcCharger
         return AcCharger;

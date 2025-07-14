@@ -29,7 +29,6 @@ RED.nodes.registerType('victron-ble', {
             
             $.getJSON('victron-ble/discover', function(devices: any[]) {
 
-                devices=[{address:"aa",name:"SmartSolar" }]
                 if (devices.length === 0) {
                     return;
                 }

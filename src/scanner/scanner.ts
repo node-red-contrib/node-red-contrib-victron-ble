@@ -134,23 +134,18 @@ export class Scanner extends BaseScanner {
         });
       
       } catch (error) {
-        if (error instanceof AdvertisementKeyMissingError) {
-          // fall through to raw
-        } else if (error instanceof UnknownDeviceError) {
-          // fall through to raw
-        } else {
-          throw error;
-        }
+        // If no key or parse failed, emit raw
+        this.emitter.emit('packet', {
+          type: 'raw',
+          address,
+          name,
+          rssi,
+          lastSeen: now,
+          raw: rawData,
+          error: error?.toString()
+        });
       }
     }
-    // If no key or parse failed, emit raw
-    this.emitter.emit('packet', {
-      type: 'raw',
-      address,
-      name,
-      rssi,
-      lastSeen: now,
-      raw: rawData
-    });
+   
   }
 } 
