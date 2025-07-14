@@ -14,6 +14,7 @@ module.exports = function(RED: NodeAPI) {
   }
 
   RED.httpAdmin.get('/victron-ble/discover', function(req: any, res: any) {
+    console.log('discover');
     const scanner = getScanner();
     res.json(scanner.getDiscoveredDevices());
   });

@@ -287,9 +287,7 @@ export abstract class Device {
   }
 
   parse(data: Buffer): DeviceData {
-    console.log(`Parsing data: ${data.toString('hex')}`);
     const decrypted = this.decrypt(data);
-    console.log(`Decrypted: ${decrypted.toString('hex')}`);
     const parsed = this.parseDecrypted(decrypted);
     const modelId = this.getModelId(data);
     return new this.dataType(modelId, parsed);
