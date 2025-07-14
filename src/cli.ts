@@ -15,7 +15,7 @@ function getScanner(): Scanner {
 
 async function discoverDevices(): Promise<void> {
   const scanner = getScanner();
-  console.log('Discovering devices. Press Ctrl+C to stop.');
+  console.log('Discovering devices. Stop to get the results. Press Ctrl+C to stop.');
   process.on('SIGINT', () => {
     const devices = scanner.getDiscoveredDevices();
     console.log('Discovered devices:');
@@ -72,7 +72,7 @@ program
   .command('read')
   .description('Read data from a specified device')
   .argument('<address>', 'Device address')
-  .argument('<key>', 'Decryption key')
+  .argument('<key>', 'Decryption key','')
   .action(async (address: string, key: string) => {
     await readDeviceData(address, key);
   });

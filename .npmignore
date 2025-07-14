@@ -2,5 +2,9 @@ node_modules/
 src/
 tool/
 docs/
+tools/
 tsconfig.json
 .*/
+.cspell.json
+.eslintrc.js
+*.tgz

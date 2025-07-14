@@ -1,5 +1,4 @@
 import { createCipheriv, createDecipheriv } from 'crypto';
-import { AdvertisementKeyMismatchError } from '../exceptions';
 import { getProductName } from './product-mapping';
 
 // Sourced from VE.Direct docs
@@ -225,6 +224,38 @@ export abstract class DeviceData {
     const productName = getProductName(this._modelId);
     return productName || `Model ${this._modelId.toString(16).toUpperCase()}`;
   }
+
+
+  toJson(): Record<string, any> {
+    const data: Record<string, any> = {};
+    const methods = Object.getOwnPropertyNames(Object.getPrototypeOf(this)).filter(
+      (name) => name.startsWith('get') && typeof (this as any)[name] === 'function'
+    );
+    for (const methodName of methods) {
+      const value = (this as any)[methodName]();
+      if (value !== null && value !== undefined) {
+        const prop = methodName.slice(3);
+        const propName = prop.charAt(0).toLowerCase() + prop.slice(1);
+        if (
+          typeof value === 'object' &&
+          value.constructor &&
+          value.constructor.name !== 'Object'
+        ) {
+          data[propName] = value.toString().toLowerCase();
+        } else {
+          data[propName] = value;
+        }
+      }
+    }
+    
+    // Add modeName to the payload
+    const modelName = this.getModelName();
+    if (modelName) {
+      data.modelName = modelName;
+    }
+    
+    return data;
+  }
 }
 
 export abstract class Device {
@@ -263,7 +294,7 @@ export abstract class Device {
     
     // Key check: first byte of encrypted data should match first byte of key
     if (container.encryptedData[0] !== key[0]) {
-      throw new AdvertisementKeyMismatchError("Incorrect advertisement key");
+      throw new Error("Incorrect advertisement key");
     }
     
     // Skip the first byte (key check byte) and get the actual encrypted data

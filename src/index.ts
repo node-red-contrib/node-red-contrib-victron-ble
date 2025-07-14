@@ -17,9 +17,6 @@ export { OrionXS, OrionXSData } from './devices/orion-xs';
 // Enums and types
 export { OperationMode, ChargerError, OffReason, AlarmReason, AlarmNotification, ACInState } from './devices/base';
 
-// Exceptions
-export { UnknownDeviceError, AdvertisementKeyMissingError, AdvertisementKeyMismatchError } from './exceptions';
-
 // Utility functions
 export { detectDeviceType } from './devices';
 export { getProductName, getProductMappings, type ProductMapping } from './devices/product-mapping'; 

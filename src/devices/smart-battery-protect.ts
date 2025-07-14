@@ -1,6 +1,7 @@
 import { AlarmReason, BitReader, ChargerError, Device, DeviceData, OffReason, OperationMode } from './base';
 
 export enum OutputState {
+  SHUTDOWN = 0,
   ON = 1,
   OFF = 4,
 }

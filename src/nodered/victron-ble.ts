@@ -1,6 +1,6 @@
 import { NodeAPI, Node, NodeDef } from "node-red";
 import * as path from "path";
-const { Scanner } = require(path.join(__dirname, '../../dist'));
+const { Scanner } = require(path.join(__dirname, '../../dist/scanner'));
 
 let scannerInstance: any = null;
 
