@@ -72,7 +72,7 @@ program
   .command('read')
   .description('Read data from a specified device')
   .argument('<address>', 'Device address')
-  .argument('<key>', 'Decryption key','')
+  .argument('<key>', 'Decryption key')
   .action(async (address: string, key: string) => {
     await readDeviceData(address, key);
   });
