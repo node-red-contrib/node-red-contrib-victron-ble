@@ -21,9 +21,8 @@ function copyFile(filename, joinfiles, srcpath, dstpath){
     }
     fs.writeFileSync(dst, content, 'utf8')
 }
-
-var searchpath = 'src/nodered/';
-var exportpath = 'dist/nodered/'
+var searchpath = process.argv[2];
+var exportpath = process.argv[3];
 
 var entries = fs.readdirSync(searchpath);
 var dstentries = fs.readdirSync(exportpath);
