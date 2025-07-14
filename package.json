@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && cp -r src/nodered/icons dist/nodered && cp src/devices/products.txt dist/devices/products.txt && node tools/buildhtml.js",
     "start": "node dist/cli.js"
   },
   "bin": {

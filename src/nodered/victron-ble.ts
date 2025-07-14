@@ -23,7 +23,6 @@ module.exports = function(RED: NodeAPI) {
     const node = this;
     const address = (config.address || '').toLowerCase();
     const key = (this.credentials as any).key;
-    console.log("***********", address, key);
     const scanner = getScanner();
 
     if (address && key) {

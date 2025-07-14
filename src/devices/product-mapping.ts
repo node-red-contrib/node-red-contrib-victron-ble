@@ -14,7 +14,7 @@ export function loadProductMappings(): ProductMapping[] {
   }
 
   try {
-    const mappingPath = join(__dirname, '../../docs/Victron_ProductId_mapping.txt');
+    const mappingPath = join(__dirname, 'products.txt');
     const content = readFileSync(mappingPath, 'utf8');
     
     productMappings = content
