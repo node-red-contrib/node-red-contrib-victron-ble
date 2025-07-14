@@ -1,4 +1,4 @@
-import { BitReader, Device, DeviceData } from './base';
+import { BitReader, Device } from './base';
 
 export enum BalancerStatus {
   UNKNOWN = 0,
@@ -7,31 +7,15 @@ export enum BalancerStatus {
   IMBALANCE = 3,
 }
 
-export class SmartLithiumData extends DeviceData {
-  getBmsFlags(): number {
-    return this._data['bms_flags'];
-  }
-  getErrorFlags(): number {
-    return this._data['error_flags'];
-  }
-  getBatteryVoltage(): number | null {
-    return this._data['battery_voltage'] ?? null;
-  }
-  getBatteryTemperature(): number | null {
-    return this._data['battery_temperature'] ?? null;
-  }
-  getCellVoltages(): (number | null)[] {
-    return this._data['cell_voltages'];
-  }
-  getBalancerStatus(): BalancerStatus | null {
-    return this._data['balancer_status'] ?? null;
-  }
-}
-
 export class SmartLithium extends Device {
-  dataType = SmartLithiumData;
+  bmsFlags?: number;
+  errorFlags?: number;
+  batteryVoltage?: number;
+  batteryTemperature?: number;
+  cellVoltages?: (number | null)[];
+  balancerStatus?: BalancerStatus;
 
-  parseDecrypted(decrypted: Buffer): Record<string, any> {
+  parseDecrypted(decrypted: Buffer): void {
     const reader = new BitReader(decrypted);
     const bms_flags = reader.readUnsignedInt(32);
     const error_flags = reader.readUnsignedInt(16);
@@ -39,14 +23,13 @@ export class SmartLithium extends Device {
     const battery_voltage = reader.readUnsignedInt(12);
     const balancer_status = reader.readUnsignedInt(4);
     const battery_temperature = reader.readUnsignedInt(7);
-    return {
-      bms_flags,
-      error_flags,
-      cell_voltages: cell_voltages.map(parseCellVoltage),
-      battery_voltage: battery_voltage !== 0x0FFF ? battery_voltage / 100.0 : null,
-      balancer_status: balancer_status !== 0xF ? BalancerStatus[balancer_status] ?? null : null,
-      battery_temperature: battery_temperature !== 0x7F ? (battery_temperature - 40) : null,
-    };
+
+    this.bmsFlags = bms_flags;
+    this.errorFlags = error_flags;
+    this.cellVoltages = cell_voltages.map(v => v !== 0x7F ? v / 100 : null);
+    this.batteryVoltage = battery_voltage !== 0x0FFF ? battery_voltage / 100.0 : undefined;
+    this.balancerStatus = balancer_status !== 0xF ? balancer_status as BalancerStatus : undefined;
+    this.batteryTemperature = battery_temperature !== 0x7F ? (battery_temperature - 40) : undefined;
   }
 }
 

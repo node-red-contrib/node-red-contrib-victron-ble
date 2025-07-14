@@ -1,4 +1,4 @@
-import { AlarmReason, BitReader, Device, DeviceData, kelvinToCelsius } from './base';
+import { AlarmReason, BitReader, Device, kelvinToCelsius } from './base';
 import { AuxMode } from './battery-monitor';
 
 export enum MeterType {
@@ -21,35 +21,16 @@ export enum MeterType {
   WATER_HEATER = 8,
 }
 
-export class DcEnergyMeterData extends DeviceData {
-  getMeterType(): MeterType {
-    return this._data['meter_type'];
-  }
-  getCurrent(): number | null {
-    return this._data['current'] ?? null;
-  }
-  getVoltage(): number | null {
-    return this._data['voltage'] ?? null;
-  }
-  getAlarm(): AlarmReason | null {
-    return this._data['alarm'] > 0 ? this._data['alarm'] : null;
-  }
-  getAuxMode(): AuxMode {
-    return this._data['aux_mode'];
-  }
-  getTemperature(): number | null {
-    const temp = this._data['temperature_kelvin'];
-    return temp ? kelvinToCelsius(temp) : null;
-  }
-  getStarterVoltage(): number | null {
-    return this._data['starter_voltage'] ?? null;
-  }
-}
-
 export class DcEnergyMeter extends Device {
-  dataType = DcEnergyMeterData;
+  meterType?: MeterType;
+  current?: number;
+  voltage?: number;
+  alarm?: AlarmReason;
+  auxMode?: AuxMode;
+  temperature?: number;
+  starterVoltage?: number;
 
-  parseDecrypted(decrypted: Buffer): Record<string, any> {
+  parseDecrypted(decrypted: Buffer): void {
     const reader = new BitReader(decrypted);
     const meter_type = reader.readSignedInt(16);
     const voltage = reader.readSignedInt(16);
@@ -57,18 +38,16 @@ export class DcEnergyMeter extends Device {
     const aux = reader.readUnsignedInt(16);
     const aux_mode = reader.readUnsignedInt(2);
     const current = reader.readSignedInt(22);
-    const parsed: Record<string, any> = {
-      meter_type: meter_type,
-      aux_mode: aux_mode,
-      current: current !== 0x3FFFFF ? current / 1000 : null,
-      voltage: voltage !== 0x7FFF ? voltage / 100 : null,
-      alarm: alarm,
-    };
+
+    this.meterType = meter_type;
+    this.auxMode = aux_mode;
+    this.current = current !== 0x3FFFFF ? current / 1000 : undefined;
+    this.voltage = voltage !== 0x7FFF ? voltage / 100 : undefined;
+    this.alarm = alarm;
     if (aux_mode === AuxMode.STARTER_VOLTAGE) {
-      parsed['starter_voltage'] = BitReader.toSignedInt(aux, 16) / 100;
+      this.starterVoltage = BitReader.toSignedInt(aux, 16) / 100;
     } else if (aux_mode === AuxMode.TEMPERATURE) {
-      parsed['temperature_kelvin'] = aux !== 0xFFFF ? aux / 100 : null;
+      this.temperature = aux !== 0xFFFF ? aux / 100 : undefined;
     }
-    return parsed;
   }
 } 

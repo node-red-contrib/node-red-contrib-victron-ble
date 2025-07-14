@@ -168,8 +168,15 @@ export class Scanner {
     if (this.deviceKeys[address]) {
       try {
         const device = this.getDevice(peripheral, rawData);
-        const parsed = device.parse(rawData);
-        const payload = parsed.toJson();
+        device.parse(rawData);
+        // Copy all own properties except functions and undefined
+        const payload: Record<string, any> = {};
+        for (const key of Object.keys(device)) {
+          const value = (device as any)[key];
+          if (typeof value !== 'function' && value !== undefined) {
+            payload[key] = value;
+          }
+        }
         dev.lastParsed = payload;
         this.emitter.emit('packet', {
           type: 'parsed',

@@ -1,4 +1,4 @@
-import { AlarmReason, BitReader, ChargerError, Device, DeviceData, OffReason, OperationMode } from './base';
+import { AlarmReason, BitReader, ChargerError, Device, OffReason, OperationMode } from './base';
 
 export enum OutputState {
   SHUTDOWN = 0,
@@ -6,37 +6,17 @@ export enum OutputState {
   OFF = 4,
 }
 
-export class SmartBatteryProtectData extends DeviceData {
-  getDeviceState(): OperationMode | null {
-    return this._data['device_state'] ?? null;
-  }
-  getOutputState(): OutputState | null {
-    return this._data['output_state'] ?? null;
-  }
-  getErrorCode(): ChargerError | null {
-    return this._data['error_code'] ?? null;
-  }
-  getAlarmReason(): AlarmReason {
-    return this._data['alarm_reason'];
-  }
-  getWarningReason(): AlarmReason {
-    return this._data['warning_reason'];
-  }
-  getInputVoltage(): number | null {
-    return this._data['input_voltage'] ?? null;
-  }
-  getOutputVoltage(): number | null {
-    return this._data['output_voltage'] ?? null;
-  }
-  getOffReason(): OffReason {
-    return this._data['off_reason'];
-  }
-}
-
 export class SmartBatteryProtect extends Device {
-  dataType = SmartBatteryProtectData;
+  deviceState?: OperationMode;
+  outputState?: OutputState;
+  errorCode?: ChargerError;
+  alarmReason?: AlarmReason;
+  warningReason?: AlarmReason;
+  inputVoltage?: number;
+  outputVoltage?: number;
+  offReason?: OffReason;
 
-  parseDecrypted(decrypted: Buffer): Record<string, any> {
+  parseDecrypted(decrypted: Buffer): void {
     const reader = new BitReader(decrypted);
     const device_state = reader.readUnsignedInt(8);
     const output_state = reader.readUnsignedInt(8);
@@ -46,15 +26,14 @@ export class SmartBatteryProtect extends Device {
     const input_voltage = reader.readSignedInt(16);
     const output_voltage = reader.readUnsignedInt(16);
     const off_reason = reader.readUnsignedInt(32);
-    return {
-      device_state: device_state !== 0xFF ? OperationMode[device_state] ?? null : null,
-      output_state: output_state !== 0xFF ? OutputState[output_state] ?? null : null,
-      error_code: error_code !== 0xFF ? ChargerError[error_code] ?? null : null,
-      alarm_reason: AlarmReason[alarm_reason] ?? alarm_reason,
-      warning_reason: AlarmReason[warning_reason] ?? warning_reason,
-      input_voltage: input_voltage !== 0x7FFF ? input_voltage / 100 : null,
-      output_voltage: output_voltage !== 0xFFFF ? output_voltage / 100 : null,
-      off_reason: OffReason[off_reason] ?? off_reason,
-    };
+
+    this.deviceState = device_state !== 0xFF ? device_state as OperationMode : undefined;
+    this.outputState = output_state !== 0xFF ? output_state as OutputState : undefined;
+    this.errorCode = error_code !== 0xFF ? error_code as ChargerError : undefined;
+    this.alarmReason = alarm_reason as AlarmReason;
+    this.warningReason = warning_reason as AlarmReason;
+    this.inputVoltage = input_voltage !== 0x7FFF ? input_voltage / 100 : undefined;
+    this.outputVoltage = output_voltage !== 0xFFFF ? output_voltage / 100 : undefined;
+    this.offReason = off_reason as OffReason;
   }
 } 

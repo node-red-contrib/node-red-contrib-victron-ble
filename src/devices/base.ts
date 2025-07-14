@@ -260,7 +260,6 @@ export abstract class DeviceData {
 
 export abstract class Device {
   protected advertisementKey: string;
-  abstract dataType: new (modelId: number, data: Record<string, any>) => DeviceData;
 
   constructor(advertisementKey: string) {
     this.advertisementKey = advertisementKey;
@@ -317,14 +316,12 @@ export abstract class Device {
     return decrypted;
   }
 
-  parse(data: Buffer): DeviceData {
+  parse(data: Buffer): void {
     const decrypted = this.decrypt(data);
-    const parsed = this.parseDecrypted(decrypted);
-    const modelId = this.getModelId(data);
-    return new this.dataType(modelId, parsed);
+    this.parseDecrypted(decrypted);
   }
 
-  abstract parseDecrypted(decrypted: Buffer): Record<string, any>;
+  abstract parseDecrypted(decrypted: Buffer): void;
 }
 
 export function kelvinToCelsius(tempInKelvin: number): number {
