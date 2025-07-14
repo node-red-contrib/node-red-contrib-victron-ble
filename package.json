@@ -1,6 +1,6 @@
 {
   "name": "victron-ble",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "node-red node to parse Instant Readout advertisement data from Victron BLE devices",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
