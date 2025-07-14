@@ -4,39 +4,56 @@ declare var RED: EditorRED;
 
 RED.nodes.registerType('victron-ble', {
     category: 'victron',
-    color: '#a6bbcf',
+    color: '#4790d0',
     defaults: {
         name: { value: "" },
         address: { value: "", required: true },
         key: { value: "", type: "text" }
     },
+    credentials:{
+        key: { type: "text" }
+    },
     inputs: 0,
     outputs: 1,
-    icon: "font-awesome/fa-bluetooth",
+    icon: "victronenergy.svg",
+    paletteLabel: "BLE",
     label: function(this: any) {
-        return this.name || "victron-ble";
+        return this.name || "BLE";
     },
-    oneditprepare: function() {
-        var $discoverBtn = $('<button type="button" class="red-ui-button">Discover Devices</button>');
-        $discoverBtn.insertAfter("#node-input-address");
+    oneditprepare() {
+        if ((this as any).credentials.has_key)
+            $("#node-input-key").attr("placeholder", "**** Change existing Decryption Key ****");
+
+        var $discoverBtn = $("#node-victron-ble-discover");
         $discoverBtn.on('click', () => {
-            var $btn = $discoverBtn;
-            $btn.prop('disabled', true).text('Scanning...');
+            
             $.getJSON('victron-ble/discover', function(devices: any[]) {
-                $btn.prop('disabled', false).text('Discover Devices');
-                var $select = $('<select id="victron-device-select"></select>');
-                $select.append('<option value="">Select a device</option>');
+
+                devices=[{address:"aa",name:"SmartSolar" }]
+                if (devices.length === 0) {
+                    return;
+                }
+
+                const options_list: {value: string; label: string;}[] = [];
+
                 devices.forEach(function(dev: any) {
-                    $select.append('<option value="' + dev.address + '">' + dev.address + ' (' + dev.name + ')</option>');
+                    options_list.push( {value: dev.address,  label: dev.name + ' (' + dev.address + ')'});
                 });
-                $select.insertAfter($btn);
-                $select.on('change', function(this: any) {
-                    $('#node-input-address').val($(this).val());
+
+                $("#node-input-address").typedInput({
+                    types: [
+                        {
+                            value: "",
+                            options: options_list
+                        }
+                    ]
                 });
-            }).fail(function() {
-                $btn.prop('disabled', false).text('Discover Devices');
-                alert('Device discovery failed');
             });
         });
+    },
+    oneditsave() {
+        const $inputKey = $('#node-input-key');
+        if ($inputKey.val()=="")
+            $inputKey.remove();
     }
 }); 

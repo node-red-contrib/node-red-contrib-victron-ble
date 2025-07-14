@@ -72,8 +72,6 @@ export function detectDeviceType(data: Buffer): (new (advertisementKey: string) 
     const mode = data.readUInt8(4);
     const productName = getProductName(modelId);
     
-    console.log(`Model ID: 0x${modelId.toString(16).toUpperCase()}, Mode: 0x${mode.toString(16).toUpperCase()}, Product: ${productName || 'Unknown'}`);
-    
     // Model ID-based preferences
     const match = MODEL_PARSER_OVERRIDE[modelId];
     if (match) {
@@ -84,43 +82,32 @@ export function detectDeviceType(data: Buffer): (new (advertisementKey: string) 
     // Defaults based on mode
     switch (mode) {
       case 0x2:  // BatteryMonitor
-        console.log('Detected as BatteryMonitor');
+      
         return BatteryMonitor;
       case 0xD:  // DcEnergyMeter
-        console.log('Detected as DcEnergyMeter');
+      
         return DcEnergyMeter;
       case 0x8:  // AcCharger
-        console.log('Detected as AcCharger');
         return AcCharger;
       case 0x4:  // DcDcConverter
-        console.log('Detected as DcDcConverter');
         return DcDcConverter;
       case 0x3:  // Inverter
-        console.log('Detected as Inverter');
         return Inverter;
       case 0x6:  // InverterRS
-        console.log('InverterRS not implemented yet');
         break;
       case 0xA:  // LynxSmartBMS
-        console.log('Detected as LynxSmartBMS');
         return LynxSmartBMS;
       case 0xB:  // MultiRS
-        console.log('MultiRS not implemented yet');
         break;
       case 0x5:  // SmartLithium (commercially Lithium Battery Smart / LiFePO4 Battery Smart)
-        console.log('Detected as SmartLithium');
         return SmartLithium;
       case 0x9:  // SmartBatteryProtect
-        console.log('Detected as SmartBatteryProtect');
         return SmartBatteryProtect;
       case 0x1:  // SolarCharger
-        console.log('Detected as SolarCharger');
         return SolarCharger;
       case 0xC:  // VE.Bus
-        console.log('Detected as VE.Bus');
         return VEBus;
       case 0xF:  // Orion XS
-        console.log('Detected as Orion XS');
         return OrionXS;
     }
 

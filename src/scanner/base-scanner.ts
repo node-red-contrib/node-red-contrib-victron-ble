@@ -48,7 +48,6 @@ export abstract class BaseScanner {
                   console.log('Error scanning:', error);
                   reject(error);
                 } else {
-                  console.log('Scanning...');
                   this.noble.on('discover', (peripheral: Peripheral) => {
                     try {
                       this.detectionCallback(peripheral);

@@ -90,9 +90,7 @@ export class Scanner extends BaseScanner {
   private getDevice(peripheral: Peripheral, rawData: Buffer): Device {
     const deviceAddress = peripheral.address || peripheral.id || 'Unknown';
     const address = deviceAddress.toLowerCase();
-    console.log(`Getting device for ${address} with key ${this.deviceKeys[address]}`);
     if (!(address in this.knownDevices)) {
-      console.log(`No known device for ${address}, creating new one`);
       const key = this.deviceKeys[address];
       if (!key) throw new AdvertisementKeyMissingError(`No key for ${address}`);
       const deviceClass = detectDeviceType(rawData);

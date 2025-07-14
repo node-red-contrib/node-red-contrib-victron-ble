@@ -14,7 +14,6 @@ module.exports = function(RED: NodeAPI) {
   }
 
   RED.httpAdmin.get('/victron-ble/discover', function(req: any, res: any) {
-    console.log('discover');
     const scanner = getScanner();
     res.json(scanner.getDiscoveredDevices());
   });
@@ -23,7 +22,8 @@ module.exports = function(RED: NodeAPI) {
     RED.nodes.createNode(this, config);
     const node = this;
     const address = (config.address || '').toLowerCase();
-    const key = config.key;
+    const key = (this.credentials as any).key;
+    console.log("***********", address, key);
     const scanner = getScanner();
 
     if (address && key) {
@@ -42,5 +42,5 @@ module.exports = function(RED: NodeAPI) {
     });
   }
 
-  RED.nodes.registerType('victron-ble', VictronBleNode);
+  RED.nodes.registerType('victron-ble', VictronBleNode ,{ credentials: { key: { type: "password" }}} );
 }; 

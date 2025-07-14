@@ -8,8 +8,10 @@
     "Mattheis",
     "nodered",
     "oneditprepare",
+    "oneditsave",
     "rssi",
     "vebus",
-    "victron"
+    "victron",
+    "victronenergy"
   ]
 }
