@@ -1,7 +1,9 @@
-import { AlarmReason, BitReader, Device, OperationMode } from './base';
+import { AlarmReason, BitReader, Device, OperationMode, EnumField } from './base';
 
 export class Inverter extends Device {
+  @EnumField(OperationMode)
   deviceState?: OperationMode;
+  @EnumField(AlarmReason)
   alarm?: AlarmReason;
   batteryVoltage?: number;
   acApparentPower?: number;

@@ -1,10 +1,14 @@
 import { BitReader, ChargerError, Device, OffReason, OperationMode } from './base';
+import { EnumField } from './base';
 
 export class DcDcConverter extends Device {
+  @EnumField(OperationMode)
   chargeState?: OperationMode;
+  @EnumField(ChargerError)
   chargerError?: ChargerError;
   inputVoltage?: number;
   outputVoltage?: number;
+  @EnumField(OffReason)
   offReason?: OffReason;
 
   parseDecrypted(decrypted: Buffer): void {

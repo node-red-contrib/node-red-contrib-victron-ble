@@ -1,7 +1,9 @@
-import { BitReader, ChargerError, Device, OperationMode } from './base';
+import { BitReader, ChargerError, Device, OperationMode, EnumField } from './base';
 
 export class SolarCharger extends Device {
+  @EnumField(OperationMode)
   chargeState?: OperationMode;
+  @EnumField(ChargerError)
   chargerError?: ChargerError;
   batteryVoltage?: number;
   batteryChargingCurrent?: number;

@@ -1,4 +1,4 @@
-import { AlarmReason, BitReader, Device, kelvinToCelsius } from './base';
+import { AlarmReason, BitReader, Device, kelvinToCelsius, EnumField } from './base';
 
 export enum AuxMode {
   STARTER_VOLTAGE = 0,
@@ -10,7 +10,9 @@ export enum AuxMode {
 export class BatteryMonitor extends Device {
   remainingMins?: number;
   voltage?: number;
+  @EnumField(AlarmReason)
   alarm?: AlarmReason;
+  @EnumField(AuxMode)
   auxMode?: AuxMode;
   current?: number;
   consumedAh?: number;

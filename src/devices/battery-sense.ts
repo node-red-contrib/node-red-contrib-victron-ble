@@ -1,11 +1,13 @@
-import { kelvinToCelsius, Device, BitReader, AlarmReason } from './base';
+import { kelvinToCelsius, Device, BitReader, AlarmReason, EnumField } from './base';
 import { AuxMode } from './battery-monitor';
 
 export class BatterySense extends Device {
   temperature?: number;
   voltage?: number;
   remainingMins?: number;
+  @EnumField(AlarmReason)
   alarm?: AlarmReason;
+  @EnumField(AuxMode)
   auxMode?: AuxMode;
   current?: number;
   consumedAh?: number;

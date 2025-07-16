@@ -1,4 +1,5 @@
 import { AlarmReason, BitReader, ChargerError, Device, OffReason, OperationMode } from './base';
+import { EnumField } from './base';
 
 export enum OutputState {
   SHUTDOWN = 0,
@@ -7,13 +8,19 @@ export enum OutputState {
 }
 
 export class SmartBatteryProtect extends Device {
+  @EnumField(OperationMode)
   deviceState?: OperationMode;
+  @EnumField(OutputState)
   outputState?: OutputState;
+  @EnumField(ChargerError)
   errorCode?: ChargerError;
+  @EnumField(AlarmReason)
   alarmReason?: AlarmReason;
+  @EnumField(AlarmReason)
   warningReason?: AlarmReason;
   inputVoltage?: number;
   outputVoltage?: number;
+  @EnumField(OffReason)
   offReason?: OffReason;
 
   parseDecrypted(decrypted: Buffer): void {

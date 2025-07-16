@@ -1,5 +1,13 @@
 import { createCipheriv, createDecipheriv } from 'crypto';
 import { getProductName } from './product-mapping';
+import 'reflect-metadata';
+
+// Decorator to mark a property as an enum field
+export function EnumField(enumType: object) {
+  return function (target: any, propertyKey: string) {
+    Reflect.defineMetadata('enumType', enumType, target, propertyKey);
+  };
+}
 
 // Sourced from VE.Direct docs
 export enum OperationMode {
@@ -210,7 +218,7 @@ export interface AdvertisementContainer {
   iv: number;
   encryptedData: Buffer;
 }
-
+/*
 export abstract class DeviceData {
   protected _data: Record<string, any>;
   protected _modelId: number;
@@ -226,38 +234,9 @@ export abstract class DeviceData {
   }
 
 
-  toJson(): Record<string, any> {
-    const data: Record<string, any> = {};
-    const methods = Object.getOwnPropertyNames(Object.getPrototypeOf(this)).filter(
-      (name) => name.startsWith('get') && typeof (this as any)[name] === 'function'
-    );
-    for (const methodName of methods) {
-      const value = (this as any)[methodName]();
-      if (value !== null && value !== undefined) {
-        const prop = methodName.slice(3);
-        const propName = prop.charAt(0).toLowerCase() + prop.slice(1);
-        if (
-          typeof value === 'object' &&
-          value.constructor &&
-          value.constructor.name !== 'Object'
-        ) {
-          data[propName] = value.toString().toLowerCase();
-        } else {
-          data[propName] = value;
-        }
-      }
-    }
-    
-    // Add modeName to the payload
-    const modelName = this.getModelName();
-    if (modelName) {
-      data.modelName = modelName;
-    }
-    
-    return data;
-  }
-}
 
+}
+*/
 export abstract class Device {
   protected advertisementKey: string;
 
@@ -322,6 +301,30 @@ export abstract class Device {
   }
 
   abstract parseDecrypted(decrypted: Buffer): void;
+
+  toJson(): Record<string, any> {
+    const data: Record<string, any> = {};
+    for (const key of Object.keys(this)) {
+      if (key === 'advertisementKey') continue;
+      let value = (this as any)[key];
+      if (value === undefined) continue;
+      // Check for enum metadata
+      const enumType = Reflect.getMetadata('enumType', this, key);
+      if (enumType && typeof value === 'number') {
+        for (const enumKey in enumType) {
+          if ((enumType as any)[enumKey] === value) {
+            data[key] = enumKey;
+            break;
+          }
+        }
+      } else if (Array.isArray(value)) {
+        data[key] = value.map(v => typeof v === 'number' ? v : v);
+      } else {
+        data[key] = value;
+      }
+    }
+    return data;
+  }
 }
 
 export function kelvinToCelsius(tempInKelvin: number): number {

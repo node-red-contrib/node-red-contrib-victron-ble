@@ -1,4 +1,4 @@
-import { AlarmReason, BitReader, Device, kelvinToCelsius } from './base';
+import { AlarmReason, BitReader, Device, kelvinToCelsius, EnumField } from './base';
 import { AuxMode } from './battery-monitor';
 
 export enum MeterType {
@@ -22,10 +22,13 @@ export enum MeterType {
 }
 
 export class DcEnergyMeter extends Device {
+  @EnumField(MeterType)
   meterType?: MeterType;
   current?: number;
   voltage?: number;
+  @EnumField(AlarmReason)
   alarm?: AlarmReason;
+  @EnumField(AuxMode)
   auxMode?: AuxMode;
   temperature?: number;
   starterVoltage?: number;

@@ -1,4 +1,4 @@
-import { BitReader, Device } from './base';
+import { BitReader, Device, EnumField } from './base';
 
 export enum BalancerStatus {
   UNKNOWN = 0,
@@ -13,6 +13,7 @@ export class SmartLithium extends Device {
   batteryVoltage?: number;
   batteryTemperature?: number;
   cellVoltages?: (number | null)[];
+  @EnumField(BalancerStatus)
   balancerStatus?: BalancerStatus;
 
   parseDecrypted(decrypted: Buffer): void {

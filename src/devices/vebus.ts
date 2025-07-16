@@ -1,9 +1,12 @@
-import { ACInState, AlarmNotification, BitReader, Device, OperationMode } from './base';
+import { ACInState, AlarmNotification, BitReader, Device, OperationMode, EnumField } from './base';
 
 export class VEBus extends Device {
+  @EnumField(OperationMode)
   deviceState?: OperationMode;
   error?: number;
+  @EnumField(AlarmNotification)
   alarm?: AlarmNotification;
+  @EnumField(ACInState)
   acInState?: ACInState;
   acInPower?: number;
   acOutPower?: number;

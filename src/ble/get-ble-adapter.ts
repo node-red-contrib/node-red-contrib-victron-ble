@@ -1,21 +1,17 @@
 import { BLEAdapter } from './ble-adapter';
 import { NobleBleAdapter } from './noble-adapter';
-import { NodeBleAdapter } from './node-ble-adapter';
+import { BluetoothctlBleAdapter } from './bluetoothctl-adapter';
 
 export async function getBleAdapter(): Promise<BLEAdapter> {
-  let nobleAdapter: NobleBleAdapter | undefined = undefined;
+  let btctlAdapter: BluetoothctlBleAdapter | undefined = undefined;
   try {
-    nobleAdapter = new NobleBleAdapter();
+    btctlAdapter = new BluetoothctlBleAdapter();
+    await btctlAdapter.startScan();
+    return btctlAdapter;
+  } catch (err: any) {
+    // Fallback to noble-based adapter
+    const nobleAdapter = new NobleBleAdapter();
     await nobleAdapter.startScan();
     return nobleAdapter;
-  } catch (err: any) {
-    console.log("Try switch to node-ble library")
-    try { nobleAdapter?.stopScan() } catch{ }
-    if (err.message && err.message.includes('adapter state unauthorized')) {
-      const nodeBleAdapter = new NodeBleAdapter();
-      await nodeBleAdapter.startScan();
-      return nodeBleAdapter;
-    }
-    throw err;
   }
 } 

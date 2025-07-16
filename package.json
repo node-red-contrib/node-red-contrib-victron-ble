@@ -41,7 +41,8 @@
   "dependencies": {
     "@abandonware/noble": "1.9.2-26",
     "commander": "14.0.0",
-    "node-ble": "^1.13.0"
+    "node-ble": "^1.13.0",
+    "reflect-metadata": "^0.2.2"
   },
   "devDependencies": {
     "@types/node": "24.0.13",

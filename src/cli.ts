@@ -17,7 +17,10 @@ async function discoverDevices(): Promise<void> {
   const scanner = getScanner();
   console.log('Discovering devices. Stop to get the results. Press Ctrl+C to stop.');
   process.on('SIGINT', () => {
+    console.log('Stopping');
     const devices = scanner.getDiscoveredDevices();
+    console.log('call stop');
+    scanner.stop();
     console.log('Discovered devices:');
     devices.forEach(dev => {
       console.log(`${dev.address}: ${dev.name} (RSSI: ${dev.rssi})`);
@@ -32,12 +35,13 @@ async function readDeviceData(address: string, key: string): Promise<void> {
   const scanner = getScanner();
   scanner.setKey(address, key);
   console.log(`Reading data for ${address}. Press Ctrl+C to stop.`);
-  scanner.on('packet', (data) => {
-    if (data.type === 'parsed' && data.address === address.toLowerCase()) {
+  scanner.on('parsed', (data) => {
+    if (data.address.toLowerCase() === address.toLowerCase()) {
       console.log(JSON.stringify(data, null, 2));
     }
   });
   process.on('SIGINT', () => {
+    scanner.stop();
     process.exit(0);
   });
   setInterval(() => {}, 1000);
