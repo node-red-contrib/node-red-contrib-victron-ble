@@ -134,9 +134,14 @@ export class BluetoothctlBleAdapter extends EventEmitter implements BLEAdapter {
           name = genericMatch[2];
           this.nameCache.set(address, name);
         }
+
         if (!this.discovered.has(address)) {
           const deviceInfo: BLEDevice = { address, name };
           this.discovered.set(address, deviceInfo);
+        } else {
+          const item = this.discovered.get(address);
+          if (item)
+           item.name = name;
         }
       }
     }

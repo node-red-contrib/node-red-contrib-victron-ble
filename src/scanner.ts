@@ -80,7 +80,6 @@ export class Scanner extends EventEmitter {
         }
       } catch (error) {
         // Parsing failed, emit as raw only
-        console.log(error);
       }
       if (emitRaw) this.emit('raw', packet);
     }

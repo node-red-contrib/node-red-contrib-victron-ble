@@ -1,6 +1,6 @@
 import { NodeAPI, Node, NodeDef } from "node-red";
 import * as path from "path";
-const { Scanner } = require(path.join(__dirname, '../../dist/scanner'));
+import { Scanner } from "../scanner";
 
 let scannerInstance: any = null;
 
@@ -30,11 +30,11 @@ module.exports = function(RED: NodeAPI) {
     }
 
     function onPacket(data: any) {
-      if (data.type === 'parsed' && data.address === address) {
+      if (data.address.toLowerCase() === address.toLocaleLowerCase()) {
         node.send({ payload: data.payload, address: data.address, name: data.name, rssi: data.rssi, lastSeen: data.lastSeen });
       }
     }
-    scanner.on('packet', onPacket);
+    scanner.on('parsed', onPacket);
 
     node.on('close', function() {
       scanner.emitter.removeListener('packet', onPacket);
