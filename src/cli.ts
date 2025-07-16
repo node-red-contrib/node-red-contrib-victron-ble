@@ -15,20 +15,20 @@ function getScanner(): Scanner {
 
 async function discoverDevices(): Promise<void> {
   const scanner = getScanner();
-  console.log('Discovering devices. Stop to get the results. Press Ctrl+C to stop.');
+  console.log('Discovering devices. Press Ctrl+C to stop.');
   process.on('SIGINT', () => {
-    console.log('Stopping');
-    const devices = scanner.getDiscoveredDevices();
-    console.log('call stop');
     scanner.stop();
+    process.exit(0);
+  });
+  // Keep alive
+  setInterval(() => {
+    const devices = scanner.getDiscoveredDevices();
+    
     console.log('Discovered devices:');
     devices.forEach(dev => {
       console.log(`${dev.address}: ${dev.name} (RSSI: ${dev.rssi})`);
     });
-    process.exit(0);
-  });
-  // Keep alive
-  setInterval(() => {}, 1000);
+  }, 1000);
 }
 
 async function readDeviceData(address: string, key: string): Promise<void> {

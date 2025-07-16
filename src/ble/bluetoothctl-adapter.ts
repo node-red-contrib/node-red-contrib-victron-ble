@@ -14,46 +14,63 @@ export class BluetoothctlBleAdapter extends EventEmitter implements BLEAdapter {
   private scanning = false;
   private discovered: Map<string, BLEDeviceWithRssi> = new Map();
   private process: ReturnType<typeof spawn> | null = null;
-  private nameCache: Map<string, string | undefined> = new Map();
   private buffer = '';
   private pendingValue: PendingValueBlock | null = null;
+  private lastDevicesCommand: number = 0;
 
   async startScan(): Promise<void> {
     this.scanning = true;
-    this.process = spawn('bluetoothctl', []);
-    if (this.process.stdout) {
-      this.process.stdout.setEncoding('utf8');
-      this.process.stdout.on('data', (data: string) => {
-        this.handleBluetoothctlOutput(data);
+    return new Promise((resolve, reject) => {
+      this.process = spawn('bluetoothctl', []);
+      let errorHandled = false;
+      if (this.process.stdout) {
+        this.process.stdout.setEncoding('utf8');
+        this.process.stdout.on('data', (data: string) => {
+          this.handleBluetoothctlOutput(data);
+        });
+      }
+      if (this.process.stderr) {
+        this.process.stderr.on('data', (data: string) => {
+          // Optionally log errors
+        });
+      }
+      this.process.on('close', () => {
+        this.scanning = false;
       });
-    }
-    if (this.process.stderr) {
-      this.process.stderr.on('data', (data: string) => {
-        // Optionally log errors
+      this.process.on('error', (err) => {
+        if (!errorHandled) {
+          errorHandled = true;
+          reject(err);
+        }
       });
-    }
-    this.process.on('close', () => {
-      this.scanning = false;
+      // Send 'devices' command at the start to populate name cache
+      setTimeout(() => {
+        if (this.process && this.process.stdin) {
+          this.process.stdin.write('devices\n');
+        }
+      }, 800);
+      // Do send 'scan on' (even if it fails, it does not hurt0))
+      setTimeout(() => {
+        if (this.process && this.process.stdin) {
+          this.process.stdin.write('scan on\n');
+          this.lastDevicesCommand = Date.now();
+        }
+      }, 300);
+      
+      // Resolve immediately for compatibility (or after a short delay if you want to ensure process started)
+      setTimeout(() => {
+        if (!errorHandled) {
+          resolve();
+        }
+      }, 100); // 100ms delay to catch immediate spawn errors
     });
-    // Send 'devices' command at the start to populate name cache
-    setTimeout(() => {
-      if (this.process && this.process.stdin) {
-        this.process.stdin.write('devices\n');
-      }
-    }, 800);
-    // Do send 'scan on' (even if it fails, it does not hurt0))
-    setTimeout(() => {
-      if (this.process && this.process.stdin) {
-        this.process.stdin.write('scan on\n');
-      }
-    }, 300);
-  
   }
 
   private handleBluetoothctlOutput(data: string) {
     this.buffer += data;
     let lines = this.buffer.split(/\r?\n/);
     this.buffer = lines.pop() || '';
+
     for (const line of lines) {
       // If collecting ManufacturerData Value lines
       if (this.pendingValue) {
@@ -67,12 +84,20 @@ export class BluetoothctlBleAdapter extends EventEmitter implements BLEAdapter {
           // End of value block, emit if we have data
           const pending = this.pendingValue;
           if (pending && typeof pending.address === 'string' && pending.valueLines.length > 0) {
-            // temporary fix before adding ManufacturerData Key
             let hexString = pending.valueLines.join('').replace(/ /g, '');
             if (hexString.length > 0) {
               const rawData = Buffer.from(hexString, 'hex');
-              const address = pending.address;
+              const address = pending.address.toLocaleLowerCase();
               const dev = this.discovered.get(address) || { address };
+              // If we still don't know the name, and it's been >1s since last 'devices', send it again
+              if (!dev.name && this.process && this.process.stdin) {
+                const now = Date.now();
+                if (now - this.lastDevicesCommand > 2000) {
+                  this.process.stdin.write('devices\n');
+                  this.lastDevicesCommand = now;
+                }
+              }
+              
               const packet: BLERawPacket = {
                 ...dev,
                 rssi: dev.rssi || 0,
@@ -88,21 +113,23 @@ export class BluetoothctlBleAdapter extends EventEmitter implements BLEAdapter {
       // Device name from 'devices' command
       const devMatch = line.match(/^Device ([0-9A-F:]{17}) (.+)$/);
       if (devMatch) {
-        const address = devMatch[1];
+        const address = devMatch[1].toLocaleLowerCase();
         const name = devMatch[2];
-        this.nameCache.set(address, name);
         if (this.discovered.has(address)) {
           const dev = this.discovered.get(address);
           if (dev && !dev.name) {
             this.discovered.set(address, { ...dev, name });
           }
+        } else {
+          let dev = { address, rssi:0, name };
+          this.discovered.set(address,dev);
         }
         continue;
       }
       // RSSI
       const rssiMatch = line.match(/Device ([0-9A-F:]{17}) RSSI: (-?\d+)/);
       if (rssiMatch) {
-        const address = rssiMatch[1];
+        const address = rssiMatch[1].toLocaleLowerCase();
         const rssi = parseInt(rssiMatch[2], 10);
         // Update discovered map with latest RSSI
         let dev = this.discovered.get(address);
@@ -121,28 +148,9 @@ export class BluetoothctlBleAdapter extends EventEmitter implements BLEAdapter {
       // ManufacturerData Value (start collecting lines)
       const valueStart = line.match(/Device ([0-9A-F:]{17}) ManufacturerData Value:/);
       if (valueStart) {
-        const address = valueStart[1];
+        const address = valueStart[1].toLowerCase();
         this.pendingValue = { address, valueLines: [] };
         continue;
-      }
-      // Fallback: update discovered devices for name
-      const genericMatch = line.match(/Device ([0-9A-F:]{17})(?: (.+))?/);
-      if (genericMatch) {
-        const address = genericMatch[1];
-        let name = this.nameCache.get(address);
-        if (!name && genericMatch[2] && !genericMatch[2].startsWith('ManufacturerData')) {
-          name = genericMatch[2];
-          this.nameCache.set(address, name);
-        }
-
-        if (!this.discovered.has(address)) {
-          const deviceInfo: BLEDevice = { address, name };
-          this.discovered.set(address, deviceInfo);
-        } else {
-          const item = this.discovered.get(address);
-          if (item)
-           item.name = name;
-        }
       }
     }
   }

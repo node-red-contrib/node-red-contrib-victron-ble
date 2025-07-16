@@ -10,6 +10,7 @@ export async function getBleAdapter(): Promise<BLEAdapter> {
     return btctlAdapter;
   } catch (err: any) {
     // Fallback to noble-based adapter
+    console.log("Try noble-based adapter");
     const nobleAdapter = new NobleBleAdapter();
     await nobleAdapter.startScan();
     return nobleAdapter;
