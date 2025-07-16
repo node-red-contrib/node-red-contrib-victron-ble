@@ -8,9 +8,6 @@ export interface DiscoveredDevice {
   address: string;
   name: string;
   rssi: number;
-  lastSeen: number;
-  lastRaw: Buffer;
-  lastParsed?: Record<string, any>;
 }
 
 export class Scanner extends EventEmitter {
@@ -49,13 +46,11 @@ export class Scanner extends EventEmitter {
   
     let dev = this.discovered.get(address);
     if (!dev) {
-      dev = { address, name: packet.name || '', rssi: packet.rssi, lastSeen: now, lastRaw: packet.rawData };
+      dev = { address, name: packet.name || '', rssi: packet.rssi };
       this.discovered.set(address, dev);
     } else {
       dev.name = packet.name || '';
       dev.rssi = packet.rssi;
-      dev.lastSeen = now;
-      dev.lastRaw = packet.rawData;
     }
     // Try to parse if we have a key
     if (this.deviceKeys[address]) {
@@ -73,7 +68,6 @@ export class Scanner extends EventEmitter {
           const payload: any = device.toJson();
           delete payload.advertisementKey;
           const parsedPacket: any = { ...packet, payload};
-          dev.lastParsed = payload;
           delete parsedPacket.rawData;
           this.emit('parsed', parsedPacket);
           emitRaw = false;

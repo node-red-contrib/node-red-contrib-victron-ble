@@ -31,7 +31,7 @@ module.exports = function(RED: NodeAPI) {
 
     function onPacket(data: any) {
       if (data.address.toLowerCase() === address.toLocaleLowerCase()) {
-        node.send({ payload: data.payload, address: data.address, name: data.name, rssi: data.rssi, lastSeen: data.lastSeen });
+        node.send({ payload: data.payload, address: data.address, name: data.name, rssi: data.rssi });
       }
     }
     scanner.on('parsed', onPacket);
