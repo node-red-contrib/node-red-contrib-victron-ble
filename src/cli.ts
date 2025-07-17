@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
-import { Scanner } from './scanner';
+import { DiscoveredDevice, Scanner } from './scanner';
 
 // Singleton scanner instance
 let scanner: Scanner | null = null;
@@ -20,14 +20,20 @@ async function discoverDevices(): Promise<void> {
     scanner.stop();
     process.exit(0);
   });
+  
+  let lastDevices: DiscoveredDevice[] = [];
+ 
   // Keep alive
   setInterval(() => {
+   
     const devices = scanner.getDiscoveredDevices();
-    
-    console.log('Discovered devices:');
-    devices.forEach(dev => {
-      console.log(`${dev.address}: ${dev.name} (RSSI: ${dev.rssi})`);
-    });
+    if (JSON.stringify(devices) != JSON.stringify(lastDevices)) {
+      console.log('\nDiscovered devices:');
+      devices.forEach(dev => {
+        console.log(`${dev.address}: ${dev.name} (RSSI: ${dev.rssi})`);
+      });
+      lastDevices= devices;
+    }
   }, 1000);
 }
 

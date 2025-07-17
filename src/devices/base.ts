@@ -343,6 +343,9 @@ export class BitReader {
     const byteIndex = Math.floor(this.bitPosition / 8);
     const bitIndex = this.bitPosition % 8;
     const byte = this.data[byteIndex];
+    if (byteIndex > this.data.length) {
+      throw new Error(`length error ${byte}    ${byteIndex} / ${this.data.length}`)
+    }
     const bit = (byte >> bitIndex) & 1;
     this.bitPosition++;
     return bit;

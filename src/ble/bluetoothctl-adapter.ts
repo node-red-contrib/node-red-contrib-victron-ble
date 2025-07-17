@@ -17,6 +17,10 @@ export class BluetoothctlBleAdapter extends EventEmitter implements BLEAdapter {
   private buffer = '';
   private pendingValue: PendingValueBlock | null = null;
   private lastDevicesCommand: number = 0;
+  private lineQueue: string[] = [];
+  private processing = false;
+  private valueParsing: { address: string; valueLines: string[] } | null = null;
+
 
   async startScan(): Promise<void> {
     this.scanning = true;
@@ -26,7 +30,14 @@ export class BluetoothctlBleAdapter extends EventEmitter implements BLEAdapter {
       if (this.process.stdout) {
         this.process.stdout.setEncoding('utf8');
         this.process.stdout.on('data', (data: string) => {
-          this.handleBluetoothctlOutput(data);
+          // Split data into lines and enqueue them as fast as possible
+          this.buffer += data;
+          let lines = this.buffer.split(/\r?\n/);
+          this.buffer = lines.pop() || '';
+          for (const line of lines) {
+            this.lineQueue.push(line);
+          }
+          this.startProcessingLoop();
         });
       }
       if (this.process.stderr) {
@@ -52,7 +63,7 @@ export class BluetoothctlBleAdapter extends EventEmitter implements BLEAdapter {
       // Do send 'scan on' (even if it fails, it does not hurt0))
       setTimeout(() => {
         if (this.process && this.process.stdin) {
-          this.process.stdin.write('scan on\n');
+          this.process.stdin.write('scan on\nscan.duplicate-data off\n');
           this.lastDevicesCommand = Date.now();
         }
       }, 300);
@@ -66,92 +77,91 @@ export class BluetoothctlBleAdapter extends EventEmitter implements BLEAdapter {
     });
   }
 
-  private handleBluetoothctlOutput(data: string) {
-    this.buffer += data;
-    let lines = this.buffer.split(/\r?\n/);
-    this.buffer = lines.pop() || '';
+  private async startProcessingLoop() {
+    if (this.processing) return;
+    this.processing = true;
+    while (this.lineQueue.length > 0) {
+      const line = this.lineQueue.shift();
+      if (line !== undefined) {
+        this.handleBluetoothctlLine(line);
+      }
+      // Optionally yield to event loop for fairness
+      await new Promise((r) => setImmediate(r));
+    }
+    this.processing = false;
+  }
 
-    for (const line of lines) {
-      // If collecting ManufacturerData Value lines
-      if (this.pendingValue) {
-        // Try to extract hex bytes from the line
-        const hexString = extractHexBytes(line);
-        if (hexString) {
-          this.pendingValue.valueLines.push(hexString);
-          continue;
-        } else {
-          // Value Line finished
-          // End of value block, emit if we have data
-          const pending = this.pendingValue;
-          if (pending && typeof pending.address === 'string' && pending.valueLines.length > 0) {
-            let hexString = pending.valueLines.join('').replace(/ /g, '');
-            if (hexString.length > 0) {
-              const rawData = Buffer.from(hexString, 'hex');
-              const address = pending.address.toLocaleLowerCase();
-              const dev = this.discovered.get(address) || { address };
-              // If we still don't know the name, and it's been >1s since last 'devices', send it again
-              if (!dev.name && this.process && this.process.stdin) {
-                const now = Date.now();
-                if (now - this.lastDevicesCommand > 2000) {
-                  this.process.stdin.write('devices\n');
-                  this.lastDevicesCommand = now;
-                }
-              }
-              
-              const packet: BLERawPacket = {
-                ...dev,
-                rssi: dev.rssi || 0,
-                rawData,
-              } as any;
-              this.emit('raw', packet);
+  private handleBluetoothctlLine(line: string) {
+    // Clean up the line before processing
+    line = stripAnsiCodes(line);
+    if (!line) return;
+ 
+    // 1. If a line starts with 'Device <MAC>', it's a device line
+    const deviceLineMatch = line.match(/^Device ([0-9A-F:]{17})(.*)$/);
+    if (deviceLineMatch) {
+      // If we were collecting value lines, emit the event now
+      if (this.valueParsing && this.valueParsing.valueLines.length > 0) {
+        // Inline parsing of value lines: split by spaces, take valid hex tokens, concatenate
+        let hexString = '';
+        for (const valueLine of this.valueParsing.valueLines) {
+          const tokens = valueLine.split(' ');
+          for (const token of tokens) {
+            if (/^[0-9a-fA-F]{2}$/.test(token)) {
+              hexString += token;
             }
           }
-          this.pendingValue = null;
-          // Continue to process this line as normal
         }
-      }
-      // Device name from 'devices' command
-      const devMatch = line.match(/^Device ([0-9A-F:]{17}) (.+)$/);
-      if (devMatch) {
-        const address = devMatch[1].toLocaleLowerCase();
-        const name = devMatch[2];
-        if (this.discovered.has(address)) {
-          const dev = this.discovered.get(address);
-          if (dev && !dev.name) {
-            this.discovered.set(address, { ...dev, name });
-          }
-        } else {
-          let dev = { address, rssi:0, name };
-          this.discovered.set(address,dev);
+        if (hexString.length > 0) {
+          const rawData = Buffer.from(hexString, 'hex');
+          const address = this.valueParsing.address.toLowerCase();
+          const dev = this.discovered.get(address) || { address };
+          const packet: BLERawPacket = {
+            ...dev,
+            rssi: dev.rssi || 0,
+            rawData,
+          } as any;
+          this.emit('raw', packet);
         }
-        continue;
+        this.valueParsing = null;
       }
+      // Parse device metadata (RSSI, name, etc.)
+      const address = deviceLineMatch[1].toLowerCase();
+      const rest = deviceLineMatch[2].trim();
       // RSSI
-      const rssiMatch = line.match(/Device ([0-9A-F:]{17}) RSSI: (-?\d+)/);
+      const rssiMatch = rest.match(/RSSI: (-?\d+)/);
+      let rssi: number | undefined = undefined;
       if (rssiMatch) {
-        const address = rssiMatch[1].toLocaleLowerCase();
-        const rssi = parseInt(rssiMatch[2], 10);
-        // Update discovered map with latest RSSI
-        let dev = this.discovered.get(address);
-        if (!dev) {
-          dev = { address, rssi };
-        } else {
-          dev = { ...dev, rssi };
-        }
-        this.discovered.set(address, dev);
-        continue;
+        rssi = parseInt(rssiMatch[1], 10);
       }
-      // Ignore ManufacturerData Key lines
-      if (/Device [0-9A-F:]{17} ManufacturerData Key: (0x[0-9a-fA-F]+)/.test(line)) {
-        continue;
+
+      if (rest && rest.startsWith('ManufacturerData Value:')){
+        //if (address.toLocaleLowerCase() == 'f3:1f:9f:13:57:55')
+          this.valueParsing = { address, valueLines: [] };
       }
-      // ManufacturerData Value (start collecting lines)
-      const valueStart = line.match(/Device ([0-9A-F:]{17}) ManufacturerData Value:/);
-      if (valueStart) {
-        const address = valueStart[1].toLowerCase();
-        this.pendingValue = { address, valueLines: [] };
-        continue;
+
+      // Name (if present and not ManufacturerData)
+      let name: string | undefined = undefined;
+      if (rest && !rest.startsWith('ManufacturerData') && !rest.startsWith('RSSI:') && !rest.startsWith('AdvertisingFlags:')) {
+        name = rest;
       }
+
+      // Update discovered map
+      let dev = this.discovered.get(address) || { address };
+      if (typeof rssi === 'number') dev.rssi = rssi;
+      if (name) dev.name = name;
+      this.discovered.set(address, dev);
+
+      return;
+    }
+
+    // 2. If we are in valueParsing mode, collect value lines
+    if (this.valueParsing) {
+      // Only collect lines that are not empty and not a device line
+      if (line && !/^Device [0-9A-F:]{17}/.test(line)) {
+        this.valueParsing.valueLines.push(line);
+      }
+      // Do not emit yet; will emit when a new device line is encountered
+      return;
     }
   }
 
@@ -192,4 +202,17 @@ function extractHexBytes(line: string): string | null {
     return hexPairs.join('');
   }
   return null;
+} 
+
+// Utility function to strip ANSI escape codes, control characters, and bluetooth prompt
+function stripAnsiCodes(text: string): string {
+  return text
+    .replace(/\x1b\[[0-9;]*[a-zA-Z]/g, '')  // ANSI codes
+    .replace(/[\x00-\x1F\x7F]/g, '')        // All control characters
+    .replace(/\[NEW\] /g, '')
+    .replace(/\[CHG\] /g, '')
+    .replace(/\[DEL\] /g, '')
+    .replace(/\[bluetooth\]# \r/g, '')
+    .replace(/\[bluetooth\]#/g, '')         // Bluetooth prompt
+    .trim();
 } 

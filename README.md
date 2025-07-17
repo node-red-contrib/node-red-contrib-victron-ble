@@ -57,6 +57,27 @@ This project is inspired by [keshavdv/victron-ble](https://github.com/keshavdv/v
 
 ---
 
+## BLE Backend Selection
+
+This library supports two different BLE backends:
+
+1. **bluetoothctl terminal output parsing** (default):
+   - The library will first attempt to use a custom adapter that parses the terminal output of the `bluetoothctl` command.
+   - This approach is necessary to support Victron GX, Ekrano, and similar devices, as well as most Linux systems where noble may not function, because it need to run as root.
+   - The adapter runs `bluetoothctl` as a subprocess, parses its output in real time, and emits BLE advertisement events.
+   - **Note:** This method does not work on macOS or Windows, as `bluetoothctl` is not available there.
+
+2. **noble** (fallback):
+   - If `bluetoothctl` is not available or fails to start, the library falls back to the [noble](https://github.com/noble/noble) BLE library.
+   - This is the standard for Node.js BLE access and works on macOS, Windows, and some Linux systems.
+   - **Important limitation:** noble requires root access to access BLE hardware. On Victron GX, Ekrano, and similar devices, Node-RED runs under a non-root user, so noble cannot be used in these environments. This is a key reason for using the bluetoothctl-based approach on these platforms.
+
+> **Note:** We previously attempted to use the `node-ble` library, but found its performance and CPU usage unacceptable for production use, especially on embedded hardware.
+
+The backend is selected automatically at runtime. If `bluetoothctl` is not available, the library will attempt to use noble instead.
+
+---
+
 ## License
 
 MIT

@@ -66,7 +66,6 @@ export class Scanner extends EventEmitter {
           }
           device.parse(packet.rawData);
           const payload: any = device.toJson();
-          delete payload.advertisementKey;
           const parsedPacket: any = { ...packet, payload};
           delete parsedPacket.rawData;
           this.emit('parsed', parsedPacket);
