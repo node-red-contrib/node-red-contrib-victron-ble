@@ -127,21 +127,34 @@ export class BluetoothctlBleAdapter extends EventEmitter implements BLEAdapter {
       // Parse device metadata (RSSI, name, etc.)
       const address = deviceLineMatch[1].toLowerCase();
       const rest = deviceLineMatch[2].trim();
-      // RSSI
-      const rssiMatch = rest.match(/RSSI: (-?\d+)/);
+      // RSSI (support both old and new formats)
       let rssi: number | undefined = undefined;
+      // Old: RSSI: -78, New: RSSI: 0xffffffb2 (-78)
+      const rssiMatch = rest.match(/RSSI: (?:0x[0-9a-fA-F]+ )?\(?(-?\d+)\)?|RSSI: (-?\d+)/);
       if (rssiMatch) {
-        rssi = parseInt(rssiMatch[1], 10);
+        if (rssiMatch[1] !== undefined) {
+          rssi = parseInt(rssiMatch[1], 10);
+        } else if (rssiMatch[2] !== undefined) {
+          rssi = parseInt(rssiMatch[2], 10);
+        }
       }
 
-      if (rest && rest.startsWith('ManufacturerData Value:')){
-        //if (address.toLocaleLowerCase() == 'f3:1f:9f:13:57:55')
-          this.valueParsing = { address, valueLines: [] };
+      // Accept both ManufacturerData Value: and ManufacturerData.Value:
+      const manufacturerDataValueRegex = /ManufacturerData[ .]Value:/;
+      if (rest && manufacturerDataValueRegex.test(rest)){
+        this.valueParsing = { address, valueLines: [] };
       }
 
-      // Name (if present and not ManufacturerData)
+      // Name (if present and not ManufacturerData or RSSI or AdvertisingFlags)
       let name: string | undefined = undefined;
-      if (rest && !rest.startsWith('ManufacturerData') && !rest.startsWith('RSSI:') && !rest.startsWith('AdvertisingFlags:')) {
+      const manufacturerDataKeyRegex = /ManufacturerData[ .]Key:/;
+      if (
+        rest &&
+        !manufacturerDataValueRegex.test(rest) &&
+        !manufacturerDataKeyRegex.test(rest) &&
+        !rest.startsWith('RSSI:') &&
+        !rest.startsWith('AdvertisingFlags:')
+      ) {
         name = rest;
       }
 
