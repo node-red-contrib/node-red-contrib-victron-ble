@@ -27,7 +27,7 @@ export class SmartLithium extends Device {
 
     this.bmsFlags = bms_flags;
     this.errorFlags = error_flags;
-    this.cellVoltages = cell_voltages.map(v => v !== 0x7F ? v : null);
+    this.cellVoltages = cell_voltages.map(v => parseCellVoltage(v));
     this.batteryVoltage = battery_voltage !== 0x0FFF ? battery_voltage / 100.0 : undefined;
     this.balancerStatus = balancer_status !== 0xF ? balancer_status as BalancerStatus : undefined;
     this.batteryTemperature = battery_temperature !== 0x7F ? (battery_temperature - 40) : undefined;
