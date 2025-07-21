@@ -36,9 +36,9 @@ module.exports = function(RED: NodeAPI) {
     }
     scanner.on('parsed', onPacket);
 
-    node.on('close', function() {
-      scanner.emitter.removeListener('packet', onPacket);
-    });
+      node.on('close', function() {
+        scanner.removeListener('parsed', onPacket);
+      });
   }
 
   RED.nodes.registerType('victron-ble', VictronBleNode ,{ credentials: { key: { type: "password" }}} );
