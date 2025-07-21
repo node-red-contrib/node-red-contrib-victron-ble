@@ -37,7 +37,7 @@ module.exports = function(RED: NodeAPI) {
     scanner.on('parsed', onPacket);
 
     node.on('close', function() {
-      scanner.emitter.removeListener('packet', onPacket);
+      scanner.removeListener('parsed', onPacket);
     });
   }
 
