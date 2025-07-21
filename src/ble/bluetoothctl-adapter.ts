@@ -60,7 +60,7 @@ export class BluetoothctlBleAdapter extends EventEmitter implements BLEAdapter {
           this.process.stdin.write('devices\n');
         }
       }, 800);
-      // Do send 'scan on' (even if it fails, it does not hurt0))
+      // Do send 'scan on' (even if it fails, it does not hurt)
       setTimeout(() => {
         if (this.process && this.process.stdin) {
           this.process.stdin.write('scan on\nscan.duplicate-data off\n');
