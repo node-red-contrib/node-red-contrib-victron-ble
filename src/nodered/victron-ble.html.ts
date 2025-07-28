@@ -54,5 +54,14 @@ RED.nodes.registerType('victron-ble', {
         const $inputKey = $('#node-input-key');
         if ($inputKey.val()=="")
             $inputKey.remove();
+        // Format MAC address if missing colons
+        const $inputAddress = $('#node-input-address');
+        let address = $inputAddress.val() as string;
+        // Check for 12 hex digits, no colons
+        if (/^[0-9a-fA-F]{12}$/.test(address)) {
+            // Insert colons every 2 chars
+            address = address.replace(/(.{2})(?=.)/g, '$1:').toLocaleLowerCase();
+            $inputAddress.val(address);
+        }
     }
 }); 
