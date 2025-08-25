@@ -295,12 +295,22 @@ export abstract class Device {
     return decrypted;
   }
 
-  parse(data: Buffer): void {
+  parse(data: Buffer): this {
+    this.modelId = this.getModelId(data);
     const decrypted = this.decrypt(data);
     this.parseDecrypted(decrypted);
+    return this;
   }
 
   abstract parseDecrypted(decrypted: Buffer): void;
+
+  protected modelId?: number;
+
+  getModelName(): string {
+    if (!this.modelId) return 'Unknown Model';
+    const productName = getProductName(this.modelId);
+    return productName || `Model ${this.modelId.toString(16).toUpperCase()}`;
+  }
 
   toJson(): Record<string, any> {
     const data: Record<string, any> = {};
