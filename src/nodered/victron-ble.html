@@ -14,6 +14,11 @@
         <label for="node-input-key"><i class="fa fa-key"></i>Key</label>
         <input type="password" id="node-input-key" placeholder="Decryption Key">
     </div>
+    <div class="form-row">
+        <label for="node-input-includeRaw"><i class="fa fa-code"></i>Include Raw Data</label>
+        <input type="checkbox" id="node-input-includeRaw" style="display: inline-block; width: auto; vertical-align: top;">
+        <label for="node-input-includeRaw" style="width: 70%;">Include raw decrypted data as parseDecrypted in payload</label>
+    </div>
 </script>
 
 <script type="text/html" data-help-name="victron-ble">
@@ -30,4 +35,5 @@
         <li><b>name</b>: The device name</li>
         <li><b>rssi</b>: Signal strength</li>
     </ul>
+    <p><b>Include Raw Data:</b> When enabled, adds a <code>parseDecrypted</code> property to the payload containing the raw decrypted hex data.</p>
 </script> 

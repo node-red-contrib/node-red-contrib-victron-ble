@@ -13,6 +13,7 @@ export interface DiscoveredDevice {
 export class Scanner extends EventEmitter {
   private ble: BLEAdapter | null = null;
   private deviceKeys: Record<string, string> = {};
+  private deviceRawOptions: Record<string, boolean> = {};
   private knownDevices: Record<string, Device> = {};
   private discovered: Map<string, DiscoveredDevice> = new Map();
 
@@ -31,8 +32,9 @@ export class Scanner extends EventEmitter {
     if (this.ble) await this.ble.stopScan();
   }
 
-  setKey(address: string, key: string): void {
+  setSettings(address: string, key: string, includeRaw: boolean = false): void {
     this.deviceKeys[address.toLowerCase()] = key;
+    this.deviceRawOptions[address.toLowerCase()] = includeRaw;
     delete this.knownDevices[address.toLowerCase()];
   }
 
@@ -64,8 +66,17 @@ export class Scanner extends EventEmitter {
             device = new deviceClass(this.deviceKeys[address]);
             this.knownDevices[address] = device;
           }
-          device.parse(packet.rawData);
-          const payload: any = device.toJson();
+          const parsedDevice = device.parse(packet.rawData);
+          const payload: any = parsedDevice.toJson();
+          
+          // Add raw decrypted data if requested
+          if (this.deviceRawOptions[address]) {
+            const decryptedData = parsedDevice.getDecryptedData();
+            if (decryptedData) {
+              payload.decryptedData = decryptedData.toString('hex');
+            }
+          }
+          
           const parsedPacket: any = { ...packet, payload};
           delete parsedPacket.rawData;
           this.emit('parsed', parsedPacket);

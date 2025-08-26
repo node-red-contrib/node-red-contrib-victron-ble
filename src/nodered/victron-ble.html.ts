@@ -8,7 +8,8 @@ RED.nodes.registerType('victron-ble', {
     defaults: {
         name: { value: "" },
         address: { value: "", required: true },
-        key: { value: "", type: "text" }
+        key: { value: "", type: "text" },
+        includeRaw: { value: false }
     },
     credentials:{
         key: { type: "text" }
