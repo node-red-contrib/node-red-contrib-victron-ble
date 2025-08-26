@@ -1,7 +1,7 @@
 [
   {
     "name": "basic parse",
-    "parseDecrypted": "fdffe4040000ffff00000059a65a1c8c",
+    "decryptedData": "fdffe4040000ffff00000059a65a1c8c",
     "payload": {
       "meterType": -3,
       "auxMode": 0,
@@ -13,7 +13,7 @@
   },
   {
     "name": "aux starter",
-    "parseDecrypted": "fdffe4040000ffff00000059a65a1c8c",
+    "decryptedData": "fdffe4040000ffff00000059a65a1c8c",
     "payload": {
       "auxMode": 0,
       "starterVoltage": -0.01
@@ -21,7 +21,7 @@
   },
   {
     "name": "aux temperature none",
-    "parseDecrypted": "fdffe4040000ffff020000ae28af8a5c",
+    "decryptedData": "fdffe4040000ffff020000ae28af8a5c",
     "payload": {
       "auxMode": 2,
       "temperature": null
@@ -29,7 +29,7 @@
   },
   {
     "name": "aux temperature",
-    "parseDecrypted": "fdffe40400008888020000ae28af8a5c",
+    "decryptedData": "fdffe40400008888020000ae28af8a5c",
     "payload": {
       "auxMode": 2,
       "temperature": 349.52
@@ -37,7 +37,7 @@
   },
   {
     "name": "generic source",
-    "parseDecrypted": "ffff6f0a0000000003000043698118eb",
+    "decryptedData": "ffff6f0a0000000003000043698118eb",
     "payload": {
       "meterType": -1,
       "auxMode": 3,

@@ -69,15 +69,14 @@ export class Scanner extends EventEmitter {
           const parsedDevice = device.parse(packet.rawData);
           const payload: any = parsedDevice.toJson();
           
-          // Add raw decrypted data if requested
-          if (this.deviceRawOptions[address]) {
-            const decryptedData = parsedDevice.getDecryptedData();
-            if (decryptedData) {
-              payload.decryptedData = decryptedData.toString('hex');
-            }
-          }
-          
           const parsedPacket: any = { ...packet, payload};
+
+          // copy decryptedData to packet if requested to send it out
+          if (this.deviceRawOptions[address]) {
+            parsedPacket.decryptedData = parsedPacket.payload.decryptedData;
+          }
+
+          delete parsedPacket.payload.decryptedData;
           delete parsedPacket.rawData;
           this.emit('parsed', parsedPacket);
           emitRaw = false;

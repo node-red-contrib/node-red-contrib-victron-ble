@@ -1,7 +1,7 @@
 [
   {
     "name": "basic parse",
-    "parseDecrypted": "04006c050e000300130000fe409ac069",
+    "decryptedData": "04006c050e000300130000fe409ac069",
     "payload": {
       "chargeState": 4,
       "batteryVoltage": 13.88,
@@ -13,14 +13,14 @@
   },
   {
     "name": "bulk charge",
-    "parseDecrypted": "0300f80402000200030000fe8c9a5572",
+    "decryptedData": "0300f80402000200030000fe8c9a5572",
     "payload": {
       "chargeState": 3
     }
   },
   {
     "name": "mppt100 parse",
-    "parseDecrypted": "0300fb09650032000901ffff31bc45ad",
+    "decryptedData": "0300fb09650032000901ffff31bc45ad",
     "payload": {
       "batteryChargingCurrent": 10.1,
       "batteryVoltage": 25.55,

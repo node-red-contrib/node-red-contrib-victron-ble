@@ -1,7 +1,7 @@
 [
   {
     "name": "basic parse",
-    "parseDecrypted": "00002305ff7f80000000cbdd494cc5d1",
+    "decryptedData": "00002305ff7f80000000cbdd494cc5d1",
     "payload": {
       "chargeState": 0,
       "chargerError": 0,

@@ -1,7 +1,7 @@
 [
   {
     "name": "basic parse",
-    "parseDecrypted": "ffffe50400000000030000f40140df03",
+    "decryptedData": "ffffe50400000000030000f40140df03",
     "payload": {
       "auxMode": 3,
       "consumedAh": -50.0,
@@ -17,7 +17,7 @@
   },
   {
     "name": "aux midpoint voltage",
-    "parseDecrypted": "ffffe6040000feff010000000080fe0c",
+    "decryptedData": "ffffe6040000feff010000000080fe0c",
     "payload": {
       "auxMode": 1,
       "midpointVoltage": 655.34
@@ -25,7 +25,7 @@
   },
   {
     "name": "aux starter voltage",
-    "parseDecrypted": "ffffe6040000feff000000000080feac",
+    "decryptedData": "ffffe6040000feff000000000080feac",
     "payload": {
       "auxMode": 0,
       "starterVoltage": -0.02
@@ -33,7 +33,7 @@
   },
   {
     "name": "aux temperature",
-    "parseDecrypted": "ffffe6040000ffff020000000080fede",
+    "decryptedData": "ffffe6040000ffff020000000080fede",
     "payload": {
       "auxMode": 2,
       "temperature": 655.35

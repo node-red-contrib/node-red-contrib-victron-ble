@@ -299,7 +299,7 @@ export abstract class Device {
   parse(data: Buffer): this {
     this.modelId = this.getModelId(data);
     this.decryptedData= this.decrypt(data);
-    this.parseDecrypted( this.decryptedData);
+    this.parseDecrypted(this.decryptedData);
     return this;
   }
 
@@ -313,11 +313,10 @@ export abstract class Device {
     return productName || `Model ${this.modelId.toString(16).toUpperCase()}`;
   }
 
-  toJson(includeRaw:boolean = false): Record<string, any> {
+  toJson(): Record<string, any> {
     const data: Record<string, any> = {};
     for (const key of Object.keys(this)) {
       if (key === 'advertisementKey') continue;
-      if (!includeRaw && key === 'decryptedData') continue;
       let value = (this as any)[key];
       if (value === undefined) continue;
       // Check for enum metadata

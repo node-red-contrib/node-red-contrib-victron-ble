@@ -3,7 +3,7 @@ import * as path from 'path';
 
 interface TestCase {
   name: string;
-  parseDecrypted: string;
+  decryptedData: string;
   payload: Record<string, any>;
 }
 
@@ -54,7 +54,7 @@ function runDeviceTests(deviceType: string, DeviceClass: any) {
     testCases.forEach((testCase) => {
       test(testCase.name, () => {
         const device = new DeviceClass("dummy_key");
-        device.parseDecrypted(Buffer.from(testCase.parseDecrypted, 'hex'));
+        device.parseDecrypted(Buffer.from(testCase.decryptedData, 'hex'));
         
         // Check each expected property
         Object.entries(testCase.payload).forEach(([key, expectedValue]) => {
