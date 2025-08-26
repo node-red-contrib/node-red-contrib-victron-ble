@@ -39,7 +39,7 @@ async function discoverDevices(): Promise<void> {
 
 async function readDeviceData(address: string, key: string): Promise<void> {
   const scanner = getScanner();
-  scanner.setKey(address, key);
+  scanner.setSettings(address, key, true);
   console.log(`Reading data for ${address}. Press Ctrl+C to stop.`);
   scanner.on('parsed', (data) => {
     if (data.address.toLowerCase() === address.toLowerCase()) {

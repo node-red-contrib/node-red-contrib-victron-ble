@@ -239,6 +239,7 @@ export abstract class DeviceData {
 */
 export abstract class Device {
   protected advertisementKey: string;
+  protected decryptedData?: Buffer;
 
   constructor(advertisementKey: string) {
     this.advertisementKey = advertisementKey;
@@ -295,12 +296,22 @@ export abstract class Device {
     return decrypted;
   }
 
-  parse(data: Buffer): void {
-    const decrypted = this.decrypt(data);
-    this.parseDecrypted(decrypted);
+  parse(data: Buffer): this {
+    this.modelId = this.getModelId(data);
+    this.decryptedData= this.decrypt(data);
+    this.parseDecrypted(this.decryptedData);
+    return this;
   }
 
   abstract parseDecrypted(decrypted: Buffer): void;
+
+  protected modelId?: number;
+
+  getModelName(): string {
+    if (!this.modelId) return 'Unknown Model';
+    const productName = getProductName(this.modelId);
+    return productName || `Model ${this.modelId.toString(16).toUpperCase()}`;
+  }
 
   toJson(): Record<string, any> {
     const data: Record<string, any> = {};
@@ -368,7 +379,7 @@ export class BitReader {
     const maxValue = (1 << numBits) - 1;
     const halfMax = 1 << (numBits - 1);
     
-    if (value > halfMax) {
+    if (value >= halfMax) {
       return value - (maxValue + 1);
     }
     return value;

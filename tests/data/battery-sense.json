@@ -1,0 +1,18 @@
+[
+  {
+    "name": "basic parse",
+    "decryptedData": "ffffc60400007d73feff7fffffffff12",
+    "payload": {
+      "temperature": 22.5,
+      "voltage": 12.22
+    }
+  },
+  {
+    "name": "new model parse", 
+    "decryptedData": "fffff80400008971feff7fffffffff5c",
+    "payload": {
+      "temperature": 17.5,
+      "voltage": 12.72
+    }
+  }
+]

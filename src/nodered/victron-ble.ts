@@ -18,15 +18,16 @@ module.exports = function(RED: NodeAPI) {
     res.json(scanner.getDiscoveredDevices());
   });
 
-  function VictronBleNode(this: Node, config: NodeDef & { address?: string; key?: string }) {
+  function VictronBleNode(this: Node, config: NodeDef & { address?: string; key?: string; includeRaw?: boolean }) {
     RED.nodes.createNode(this, config);
     const node = this;
     const address = (config.address || '').toLowerCase();
     const key = (this.credentials as any).key;
+    const includeRaw = config.includeRaw || false;
     const scanner = getScanner();
 
     if (address && key) {
-      scanner.setKey(address, key);
+      scanner.setKey(address, key, includeRaw);
     }
 
     function onPacket(data: any) {
