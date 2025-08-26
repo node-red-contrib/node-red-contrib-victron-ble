@@ -3,7 +3,9 @@ import * as path from 'path';
 
 interface TestCase {
   name: string;
-  decryptedData: string;
+  decryptedData?: string;
+  rawData?: string;
+  decryptionKey?: string;
   payload: Record<string, any>;
 }
 
@@ -53,8 +55,19 @@ function runDeviceTests(deviceType: string, DeviceClass: any) {
     
     testCases.forEach((testCase) => {
       test(testCase.name, () => {
-        const device = new DeviceClass("dummy_key");
-        device.parseDecrypted(Buffer.from(testCase.decryptedData, 'hex'));
+        let device: any;
+        
+        if (testCase.rawData && testCase.decryptionKey) {
+          // Test with raw encrypted data and decryption key
+          device = new DeviceClass(testCase.decryptionKey);
+          device.parse(Buffer.from(testCase.rawData, 'hex'));
+        } else if (testCase.decryptedData) {
+          // Test with pre-decrypted data
+          device = new DeviceClass("dummy_key");
+          device.parseDecrypted(Buffer.from(testCase.decryptedData, 'hex'));
+        } else {
+          throw new Error(`Test case "${testCase.name}" must have either (rawData + decryptionKey) or decryptedData`);
+        }
         
         // Check each expected property
         Object.entries(testCase.payload).forEach(([key, expectedValue]) => {

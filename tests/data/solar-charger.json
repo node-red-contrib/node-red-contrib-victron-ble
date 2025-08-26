@@ -29,5 +29,18 @@
       "yieldToday": 500,
       "externalDeviceLoad": null
     }
+  },
+  {
+    "name": "end-to-end with raw data",
+    "rawData": "100242a0016207adceb37b605d7e0ee21b24df5c",
+    "decryptionKey": "adeccb947395801a4dd45a2eaa44bf17",
+    "payload": {
+      "chargeState": 4,
+      "batteryVoltage": 13.88,
+      "batteryChargingCurrent": 1.4,
+      "yieldToday": 30,
+      "solarPower": 19,
+      "externalDeviceLoad": 0.0
+    }
   }
 ]
