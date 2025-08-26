@@ -1,0 +1,17 @@
+[
+  {
+    "name": "basic parse",
+    "parseDecrypted": "004038ab0afaff9515551488cf0200ffb3eaf174d6fc7a4854b8ec008609e9ca",
+    "payload": {
+      "batteryTemperature": null,
+      "consumedAh": 4.4,
+      "soc": 99.4,
+      "alarmFlags": 5205,
+      "ioStatus": 5525,
+      "current": -0.6,
+      "voltage": 27.31,
+      "remainingMins": 14400,
+      "errorFlags": 0
+    }
+  }
+]

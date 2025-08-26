@@ -1,0 +1,14 @@
+[
+  {
+    "name": "basic parse",
+    "parseDecrypted": "060046a500ffffffffffffbdffeb3d1f",
+    "payload": {
+      "chargeState": 6,
+      "chargerError": 0,
+      "outputVoltage1": 13.5,
+      "outputCurrent1": 0.5,
+      "outputCurrent2": null,
+      "temperature": 21
+    }
+  }
+]

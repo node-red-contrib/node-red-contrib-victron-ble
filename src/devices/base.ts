@@ -378,7 +378,7 @@ export class BitReader {
     const maxValue = (1 << numBits) - 1;
     const halfMax = 1 << (numBits - 1);
     
-    if (value > halfMax) {
+    if (value >= halfMax) {
       return value - (maxValue + 1);
     }
     return value;
