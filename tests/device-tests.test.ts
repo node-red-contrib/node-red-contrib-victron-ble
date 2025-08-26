@@ -1,12 +1,5 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { BatteryMonitor } from '../src/devices/battery-monitor';
-import { SolarCharger } from '../src/devices/solar-charger';
-import { DcEnergyMeter } from '../src/devices/dc-energy-meter';
-import { AcCharger } from '../src/devices/ac-charger';
-import { BatterySense } from '../src/devices/battery-sense';
-import { DcDcConverter } from '../src/devices/dcdc-converter';
-import { LynxSmartBMS } from '../src/devices/lynx-smart-bms';
 
 interface TestCase {
   name: string;
@@ -14,27 +7,49 @@ interface TestCase {
   payload: Record<string, any>;
 }
 
-const deviceClasses = {
-  'battery-monitor': BatteryMonitor,
-  'solar-charger': SolarCharger,
-  'dc-energy-meter': DcEnergyMeter,
-  'ac-charger': AcCharger,
-  'battery-sense': BatterySense,
-  'dcdc-converter': DcDcConverter,
-  'lynx-smart-bms': LynxSmartBMS,
-};
-
-function loadTestData(deviceType: string): TestCase[] {
-  const filePath = path.join(__dirname, 'data', `${deviceType}.json`);
+function loadTestData(filePath: string): TestCase[] {
   if (!fs.existsSync(filePath)) {
     return [];
   }
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
+function getDeviceClass(deviceType: string): any {
+  try {
+    // Dynamic import of device class
+    const deviceModule = require(`../src/devices/${deviceType}`);
+    
+    // Find the first exported class (should be the device class)
+    const exports = Object.keys(deviceModule);
+    const deviceClass = exports.find(exportName => 
+      typeof deviceModule[exportName] === 'function' && 
+      deviceModule[exportName].prototype &&
+      deviceModule[exportName].name !== 'Object'
+    );
+    
+    if (!deviceClass) {
+      console.warn(`No device class found in module ../src/devices/${deviceType}. Available exports:`, exports);
+      return null;
+    }
+    
+    return deviceModule[deviceClass];
+  } catch (error) {
+    console.warn(`Could not load device module ../src/devices/${deviceType}:`, error instanceof Error ? error.message : String(error));
+    return null;
+  }
+}
+
 function runDeviceTests(deviceType: string, DeviceClass: any) {
   describe(`${deviceType} device tests`, () => {
-    const testCases = loadTestData(deviceType);
+    const filePath = path.join(__dirname, 'data', `${deviceType}.json`);
+    const testCases = loadTestData(filePath);
+    
+    if (testCases.length === 0) {
+      test('no test cases found', () => {
+        console.warn(`No test cases found for ${deviceType}`);
+      });
+      return;
+    }
     
     testCases.forEach((testCase) => {
       test(testCase.name, () => {
@@ -58,7 +73,29 @@ function runDeviceTests(deviceType: string, DeviceClass: any) {
   });
 }
 
-// Run tests for all device types
-Object.entries(deviceClasses).forEach(([deviceType, DeviceClass]) => {
-  runDeviceTests(deviceType, DeviceClass);
-});
+// Automatically discover and run tests for all JSON files in tests/data
+const dataDir = path.join(__dirname, 'data');
+if (fs.existsSync(dataDir)) {
+  const jsonFiles = fs.readdirSync(dataDir)
+    .filter(file => file.endsWith('.json'))
+    .map(file => file.replace('.json', ''));
+  
+  jsonFiles.forEach((deviceType) => {
+    const DeviceClass = getDeviceClass(deviceType);
+    if (DeviceClass) {
+      runDeviceTests(deviceType, DeviceClass);
+    } else {
+      describe(`${deviceType} device tests`, () => {
+        test('device class not found', () => {
+          throw new Error(`Could not load device class for ${deviceType}`);
+        });
+      });
+    }
+  });
+} else {
+  describe('Device tests', () => {
+    test('data directory not found', () => {
+      throw new Error('tests/data directory not found');
+    });
+  });
+}
