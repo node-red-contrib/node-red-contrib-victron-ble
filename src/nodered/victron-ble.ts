@@ -27,7 +27,7 @@ module.exports = function(RED: NodeAPI) {
     const scanner = getScanner();
 
     if (address && key) {
-      scanner.setKey(address, key, includeRaw);
+      scanner.setSettings(address, key, includeRaw);
     }
 
     function onPacket(data: any) {

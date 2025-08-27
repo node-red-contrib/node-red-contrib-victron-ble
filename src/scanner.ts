@@ -73,7 +73,7 @@ export class Scanner extends EventEmitter {
 
           // copy decryptedData to packet if requested to send it out
           if (this.deviceRawOptions[address]) {
-            parsedPacket.decryptedData = parsedPacket.payload.decryptedData;
+            parsedPacket.decryptedData = parsedPacket.payload.decryptedData.toString('hex');
           }
 
           delete parsedPacket.payload.decryptedData;
