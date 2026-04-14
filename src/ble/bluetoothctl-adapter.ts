@@ -218,14 +218,15 @@ function extractHexBytes(line: string): string | null {
 } 
 
 // Utility function to strip ANSI escape codes, control characters, and bluetooth prompt
-function stripAnsiCodes(text: string): string {
-  return text
-    .replace(/\x1b\[[0-9;]*[a-zA-Z]/g, '')  // ANSI codes
-    .replace(/[\x00-\x1F\x7F]/g, '')        // All control characters
-    .replace(/\[NEW\] /g, '')
-    .replace(/\[CHG\] /g, '')
-    .replace(/\[DEL\] /g, '')
-    .replace(/\[bluetooth\]# \r/g, '')
-    .replace(/\[bluetooth\]#/g, '')         // Bluetooth prompt
-    .trim();
-} 
+function stripAnsiCodes(text) {
+    return text
+        .replace(/\x1b\[[0-9;]*[a-zA-Z]/g, '') // ANSI codes
+        .replace(/[\x00-\x1F\x7F]/g, '')        // All control characters
+        .replace(/\[NEW\] /g, '')
+        .replace(/\[CHG\] /g, '')
+        .replace(/\[DEL\] /g, '')
+        .replace(/\[bluetooth\]# \r/g, '')
+        .replace(/\[bluetooth\]#/g, '')
+        .replace(/\[bluetoothctl\]>\s*/g, '')    // <-- ADD THIS LINE
+        .trim();
+}
