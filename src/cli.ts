@@ -1,20 +1,21 @@
 #!/usr/bin/env node
 
-import { Command } from 'commander';
+import { Command, Option } from 'commander';
+import { BleAdapterMode } from './ble/get-ble-adapter';
 import { DiscoveredDevice, Scanner } from './scanner';
 
 // Singleton scanner instance
 let scanner: Scanner | null = null;
-function getScanner(): Scanner {
+async function getScanner(adapterMode: BleAdapterMode): Promise<Scanner> {
   if (!scanner) {
-    scanner = new Scanner();
-    scanner.start();
+    scanner = new Scanner(adapterMode);
+    await scanner.start();
   }
   return scanner;
 }
 
-async function discoverDevices(): Promise<void> {
-  const scanner = getScanner();
+async function discoverDevices(adapterMode: BleAdapterMode): Promise<void> {
+  const scanner = await getScanner(adapterMode);
   console.log('Discovering devices. Press Ctrl+C to stop.');
   process.on('SIGINT', () => {
     scanner.stop();
@@ -37,8 +38,8 @@ async function discoverDevices(): Promise<void> {
   }, 1000);
 }
 
-async function readDeviceData(address: string, key: string): Promise<void> {
-  const scanner = getScanner();
+async function readDeviceData(address: string, key: string, adapterMode: BleAdapterMode): Promise<void> {
+  const scanner = await getScanner(adapterMode);
   scanner.setSettings(address, key, true);
   console.log(`Reading data for ${address}. Press Ctrl+C to stop.`);
   scanner.on('parsed', (data) => {
@@ -54,6 +55,9 @@ async function readDeviceData(address: string, key: string): Promise<void> {
 }
 
 const program = new Command();
+const adapterModes: BleAdapterMode[] = ['auto', 'bluez', 'bluetoothctl', 'noble'];
+const bluetoothOption = () =>
+  new Option('--bluetooth <backend>', 'Bluetooth backend').choices(adapterModes).default('auto');
 
 program
   .name('victron-ble')
@@ -74,8 +78,9 @@ program
 program
   .command('discover')
   .description('Discover Victron devices with Instant Readout')
-  .action(async () => {
-    await discoverDevices();
+  .addOption(bluetoothOption())
+  .action(async (options: { bluetooth: BleAdapterMode }) => {
+    await discoverDevices(options.bluetooth);
   });
 
 program
@@ -83,8 +88,9 @@ program
   .description('Read data from a specified device')
   .argument('<address>', 'Device address')
   .argument('<key>', 'Decryption key')
-  .action(async (address: string, key: string) => {
-    await readDeviceData(address, key);
+  .addOption(bluetoothOption())
+  .action(async (address: string, key: string, options: { bluetooth: BleAdapterMode }) => {
+    await readDeviceData(address, key, options.bluetooth);
   });
 
 program.parse(); 

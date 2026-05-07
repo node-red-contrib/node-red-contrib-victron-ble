@@ -21,6 +21,9 @@ After installing dependencies and building the project, you can use the CLI to s
 # Discover Victron BLE devices
 npx victron-ble discover
 
+# Discover with a specific BLE backend
+npx victron-ble discover --bluetooth noble
+
 # Read data from a device (replace ADDRESS and KEY)
 npx victron-ble read <DEVICE_ADDRESS> <ENCRYPTION_KEY>
 ```
@@ -59,22 +62,29 @@ This project is inspired by [keshavdv/victron-ble](https://github.com/keshavdv/v
 
 ## BLE Backend Selection
 
-This library supports two different BLE backends:
+This library supports three different BLE backends:
 
-1. **bluetoothctl terminal output parsing** (default):
-   - The library will first attempt to use a custom adapter that parses the terminal output of the `bluetoothctl` command.
-   - This approach is necessary to support Victron GX, Ekrano, and similar devices, as well as most Linux systems where noble may not function, because it need to run as root.
+1. **BlueZ via DBus** (default on Linux when available):
+   - The library first attempts to use BlueZ directly through the system DBus API.
+   - This avoids the root access requirement of noble and avoids parsing terminal output from `bluetoothctl`.
+   - It reads Victron Instant Readout advertisement data from BlueZ `Device1.ManufacturerData` updates.
+   - **Note:** This backend is only available on Linux systems with BlueZ and DBus access.
+
+2. **bluetoothctl terminal output parsing** (fallback):
+   - If the DBus backend is unavailable or fails to start, the library attempts to use a custom adapter that parses the terminal output of the `bluetoothctl` command.
+   - This approach is necessary to support Victron GX, Ekrano, and similar devices, as well as most Linux systems where noble may not function, because noble needs to run as root.
    - The adapter runs `bluetoothctl` as a subprocess, parses its output in real time, and emits BLE advertisement events.
    - **Note:** This method does not work on macOS or Windows, as `bluetoothctl` is not available there.
 
-2. **noble** (fallback):
-   - If `bluetoothctl` is not available or fails to start, the library falls back to the [noble](https://github.com/noble/noble) BLE library.
+3. **noble** (final fallback):
+   - If BlueZ DBus and `bluetoothctl` are not available or fail to start, the library falls back to the [noble](https://github.com/noble/noble) BLE library.
    - This is the standard for Node.js BLE access and works on macOS, Windows, and some Linux systems.
-   - **Important limitation:** noble requires root access to access BLE hardware. On Victron GX, Ekrano, and similar devices, Node-RED runs under a non-root user, so noble cannot be used in these environments. This is a key reason for using the bluetoothctl-based approach on these platforms.
+   - **Important limitation:** noble requires root access to access BLE hardware. On Victron GX, Ekrano, and similar devices, Node-RED runs under a non-root user, so noble cannot be used in these environments. This is a key reason for using the BlueZ DBus or `bluetoothctl` approaches on these platforms.
 
 > **Note:** We previously attempted to use the `node-ble` library, but found its performance and CPU usage unacceptable for production use, especially on embedded hardware.
 
-The backend is selected automatically at runtime. If `bluetoothctl` is not available, the library will attempt to use noble instead.
+The CLI selects the backend automatically by default in this order: BlueZ DBus, `bluetoothctl`, then noble.
+Use `--bluetooth auto`, `--bluetooth bluez`, `--bluetooth bluetoothctl`, or `--bluetooth noble` with `discover` or `read` to choose a backend explicitly.
 
 ---
 
