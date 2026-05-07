@@ -3,6 +3,7 @@ import { EventEmitter } from 'events';
 export interface BLEDevice {
   address: string;
   name?: string;
+  rssi?: number;
 }
 
 export interface BLERawPacket extends BLEDevice {
