@@ -1,5 +1,5 @@
 import { BLEAdapter, BLEDevice, BLERawPacket, BLEParsedPacket } from './ble/ble-adapter';
-import { getBleAdapter } from './ble/get-ble-adapter';
+import { BleAdapterMode, getBleAdapter } from './ble/get-ble-adapter';
 import { Device } from './devices/base';
 import { detectDeviceType } from './devices';
 import { EventEmitter } from 'events';
@@ -17,12 +17,12 @@ export class Scanner extends EventEmitter {
   private knownDevices: Record<string, Device> = {};
   private discovered: Map<string, DiscoveredDevice> = new Map();
 
-  constructor() {
+  constructor(private readonly adapterMode: BleAdapterMode = 'auto') {
     super();
   }
 
   async start(): Promise<void> {
-    this.ble = await getBleAdapter();
+    this.ble = await getBleAdapter(this.adapterMode);
     if (!this.ble) return; 
     this.ble.on('raw', (packet: BLERawPacket) => this.handleRawPacket(packet));
   }

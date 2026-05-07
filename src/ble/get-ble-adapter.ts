@@ -3,12 +3,16 @@ import { NobleBleAdapter } from './noble-adapter';
 import { BluetoothctlBleAdapter } from './bluetoothctl-adapter';
 import { DbusBleAdapter } from './dbus-adapter';
 
-export async function getBleAdapter(): Promise<BLEAdapter> {
-  const adapters: Array<{ name: string; create: () => BLEAdapter }> = [
-    { name: 'BlueZ DBus', create: () => new DbusBleAdapter() },
-    { name: 'bluetoothctl', create: () => new BluetoothctlBleAdapter() },
-    { name: 'noble', create: () => new NobleBleAdapter() },
-  ];
+export type BleAdapterMode = 'auto' | 'bluez' | 'bluetoothctl' | 'noble';
+
+const ADAPTERS: Array<{ mode: Exclude<BleAdapterMode, 'auto'>; name: string; create: () => BLEAdapter }> = [
+  { mode: 'bluez', name: 'BlueZ DBus', create: () => new DbusBleAdapter() },
+  { mode: 'bluetoothctl', name: 'bluetoothctl', create: () => new BluetoothctlBleAdapter() },
+  { mode: 'noble', name: 'noble', create: () => new NobleBleAdapter() },
+];
+
+export async function getBleAdapter(mode: BleAdapterMode = 'auto'): Promise<BLEAdapter> {
+  const adapters = mode === 'auto' ? ADAPTERS : ADAPTERS.filter((adapter) => adapter.mode === mode);
   const errors: string[] = [];
 
   for (const { name, create } of adapters) {

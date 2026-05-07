@@ -21,6 +21,9 @@ After installing dependencies and building the project, you can use the CLI to s
 # Discover Victron BLE devices
 npx victron-ble discover
 
+# Discover with a specific BLE backend
+npx victron-ble discover --bluetooth noble
+
 # Read data from a device (replace ADDRESS and KEY)
 npx victron-ble read <DEVICE_ADDRESS> <ENCRYPTION_KEY>
 ```
@@ -80,7 +83,8 @@ This library supports three different BLE backends:
 
 > **Note:** We previously attempted to use the `node-ble` library, but found its performance and CPU usage unacceptable for production use, especially on embedded hardware.
 
-The backend is selected automatically at runtime in this order: BlueZ DBus, `bluetoothctl`, then noble.
+The CLI selects the backend automatically by default in this order: BlueZ DBus, `bluetoothctl`, then noble.
+Use `--bluetooth auto`, `--bluetooth bluez`, `--bluetooth bluetoothctl`, or `--bluetooth noble` with `discover` or `read` to choose a backend explicitly.
 
 ---
 
