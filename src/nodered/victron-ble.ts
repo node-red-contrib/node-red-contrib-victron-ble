@@ -22,7 +22,7 @@ module.exports = function(RED: NodeAPI) {
     RED.nodes.createNode(this, config);
     const node = this;
     const address = (config.address || '').toLowerCase();
-    const key = (this.credentials as any).key;
+    const key = this.credentials.key || config.key;
     const includeRaw = config.includeRaw || false;
     const scanner = getScanner();
 
