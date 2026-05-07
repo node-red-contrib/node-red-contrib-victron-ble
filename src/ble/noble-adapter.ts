@@ -15,16 +15,18 @@ export class NobleBleAdapter extends EventEmitter implements BLEAdapter {
             this.scanning = true;
             noble.on('discover', (peripheral: Peripheral) => {
               const adv = peripheral.advertisement;
+              const address = peripheral.address || peripheral.uuid;
               const device: BLEDevice = {
-                address: peripheral.address,
+                address,
                 name: adv.localName,
+                rssi: peripheral.rssi,
               };
               this.discovered.set(device.address, device);
               if (adv.manufacturerData) {
                 const packet: BLERawPacket = {
                   ...device,
                   rssi: peripheral.rssi,
-                  rawData: adv.manufacturerData,
+                  rawData: normalizeManufacturerData(adv.manufacturerData),
                 };
                 this.emit('raw', packet);
               }
@@ -48,4 +50,11 @@ export class NobleBleAdapter extends EventEmitter implements BLEAdapter {
   getDiscoveredDevices(): BLEDevice[] {
     return Array.from(this.discovered.values());
   }
-} 
+}
+
+function normalizeManufacturerData(data: Buffer): Buffer {
+  if (data.length > 2 && data.readUInt16LE(0) === 0x02e1) {
+    return data.subarray(2);
+  }
+  return data;
+}

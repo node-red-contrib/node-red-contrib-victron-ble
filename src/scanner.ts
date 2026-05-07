@@ -25,7 +25,6 @@ export class Scanner extends EventEmitter {
     this.ble = await getBleAdapter();
     if (!this.ble) return; 
     this.ble.on('raw', (packet: BLERawPacket) => this.handleRawPacket(packet));
-    await this.ble.startScan();
   }
 
   async stop(): Promise<void> {
@@ -39,7 +38,17 @@ export class Scanner extends EventEmitter {
   }
 
   getDiscoveredDevices(): DiscoveredDevice[] {
-    return Array.from(this.discovered.values());
+    const devices = new Map(this.discovered);
+    for (const device of this.ble?.getDiscoveredDevices() ?? []) {
+      const address = device.address.toLowerCase();
+      const existing = devices.get(address);
+      devices.set(address, {
+        address,
+        name: device.name ?? existing?.name ?? '',
+        rssi: device.rssi ?? existing?.rssi ?? 0,
+      });
+    }
+    return Array.from(devices.values());
   }
 
   private handleRawPacket(packet: BLERawPacket): void {
@@ -51,7 +60,7 @@ export class Scanner extends EventEmitter {
       dev = { address, name: packet.name || '', rssi: packet.rssi };
       this.discovered.set(address, dev);
     } else {
-      dev.name = packet.name || '';
+      dev.name = packet.name || dev.name;
       dev.rssi = packet.rssi;
     }
     // Try to parse if we have a key
