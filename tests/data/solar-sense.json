@@ -1,0 +1,44 @@
+[
+  {
+    "name": "basic parse with all fields",
+    "decryptedData": "0000000000ee02e0150034a106092a00",
+    "payload": {
+      "errorCode": 0,
+      "chargerError": 0,
+      "installationPower": 750,
+      "todaysYield": 3500,
+      "irradiance": 850.0,
+      "cellTemperature": 45.0,
+      "batteryVoltage": 3.0,
+      "timeSinceLastSun": 10
+    }
+  },
+  {
+    "name": "all optional fields N/A",
+    "decryptedData": "00000000fffffffffffffffffffdff03",
+    "payload": {
+      "errorCode": 0,
+      "chargerError": null,
+      "installationPower": null,
+      "todaysYield": null,
+      "irradiance": null,
+      "cellTemperature": null,
+      "batteryVoltage": null,
+      "timeSinceLastSun": null
+    }
+  },
+  {
+    "name": "tiered time encoding",
+    "decryptedData": "0000000000e8034006008893d4589201",
+    "payload": {
+      "errorCode": 0,
+      "chargerError": 0,
+      "installationPower": 1000,
+      "todaysYield": 1000,
+      "irradiance": 500.0,
+      "cellTemperature": 25.0,
+      "batteryVoltage": 3.2,
+      "timeSinceLastSun": 260
+    }
+  }
+]
