@@ -10,6 +10,7 @@ import { OrionXS } from './orion-xs';
 import { SmartBatteryProtect, OutputState } from './smart-battery-protect';
 import { SmartLithium, BalancerStatus } from './smart-lithium';
 import { SolarCharger } from './solar-charger';
+import { SolarSense } from './solar-sense';
 import { VEBus } from './vebus';
 import { getProductName } from './product-mapping';
 
@@ -43,6 +44,8 @@ export {
   LynxSmartBMS,
   // Solar Charger
   SolarCharger,
+  // Solar Sense
+  SolarSense,
   // VE.Bus
   VEBus,
 };
@@ -52,6 +55,7 @@ export {
 const MODEL_PARSER_OVERRIDE: Record<number, new (advertisementKey: string) => Device> = {
   0xA3A4: BatterySense,  // Smart Battery Sense
   0xA3A5: BatterySense,  // Smart Battery Sense
+  0xC050: SolarSense,    // SolarSense 750
 };
 
 export function detectDeviceType(data: Buffer): (new (advertisementKey: string) => Device) | null {

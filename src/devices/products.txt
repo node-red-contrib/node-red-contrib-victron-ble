@@ -765,6 +765,7 @@
 49205 SmartShunt IP65 500A/50mV
 49206 SmartShunt IP65 1000A/50mV
 49207 SmartShunt IP65 2000A/50mV
+49232 SolarSense 750
 57344 Generic example 0
 57345 Generic example 1
 57346 Generic example 2
