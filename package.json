@@ -52,7 +52,7 @@
     "@typescript-eslint/eslint-plugin": "8.64.0",
     "@typescript-eslint/parser": "8.67.0",
     "eslint": "10.8.0",
-    "typescript": "6.0.3"
+    "typescript": "7.0.2"
   },
   "engines": {
     "node": ">=16.0.0"
