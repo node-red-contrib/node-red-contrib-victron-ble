@@ -98,3 +98,11 @@ MIT
 
 - Inspired by [keshavdv/victron-ble](https://github.com/keshavdv/victron-ble)
 - Not affiliated with or supported by Victron Energy 
+
+### Firmware updates and native Bluetooth dependencies
+
+The Noble backend is loaded only when selected explicitly or reached as the final
+fallback. An incompatible Noble native binding after a Node.js/firmware update
+therefore does not prevent the Node-RED node from loading or using BlueZ D-Bus or
+`bluetoothctl`. If Noble is required, its native bindings still need to match the
+installed Node.js version; a load failure is reported with the backend errors.
